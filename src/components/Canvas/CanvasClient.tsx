@@ -3,7 +3,8 @@
 import { useEffect, useRef } from 'react';
 import type Konva from 'konva';
 import Canvas from './Canvas';
-import Keyboard from '@/components/Keyboard/Keyboard';
+import SymbolBar from '@/components/Keyboard/SymbolBar';
+import SymbolDock from '@/components/Keyboard/SymbolDock';
 import Toolbar from '@/components/Toolbar/Toolbar';
 import PagesPanel from '@/components/Pages/PagesPanel';
 import { useBoardStore } from '@/store/useBoardStore';
@@ -90,8 +91,9 @@ export default function CanvasClient() {
   return (
     <>
       <Toolbar stageRef={stageRef} />
+      <SymbolBar />
       <main className="flex flex-1 overflow-hidden">
-        <Keyboard />
+        <SymbolDock />
         <div className="flex-1">
           <Canvas stageRef={stageRef} />
         </div>
