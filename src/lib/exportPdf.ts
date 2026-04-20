@@ -71,6 +71,32 @@ export async function exportAllPagesToPdf(
   return pdf;
 }
 
+export function exportSelectionToPdf(
+  stage: Konva.Stage,
+  bbox: { x: number; y: number; width: number; height: number },
+  options: SinglePageOptions,
+): jsPDF {
+  const pad = 8;
+  const paddedBox = {
+    x: bbox.x - pad,
+    y: bbox.y - pad,
+    width: bbox.width + pad * 2,
+    height: bbox.height + pad * 2,
+  };
+  const png = exportStageToPng(stage, {
+    background: options.background,
+    pixelRatio: options.pixelRatio ?? 2,
+    bbox: paddedBox,
+  });
+  const pxToMm = 25.4 / 96;
+  const mmW = paddedBox.width * pxToMm;
+  const mmH = paddedBox.height * pxToMm;
+  const orientation = mmW >= mmH ? 'landscape' : 'portrait';
+  const pdf = new jsPDF({ orientation, unit: 'mm', format: [mmW, mmH] });
+  pdf.addImage(png, 'PNG', 0, 0, mmW, mmH);
+  return pdf;
+}
+
 export function downloadPdf(pdf: jsPDF, filename: string): void {
   pdf.save(filename);
 }

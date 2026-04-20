@@ -8,6 +8,7 @@ interface ExportOptions {
   background: ExportBackground;
   padding?: number;
   pixelRatio?: number;
+  bbox?: { x: number; y: number; width: number; height: number };
 }
 
 function computeBBox(stage: Konva.Stage): { x: number; y: number; width: number; height: number } {
@@ -42,7 +43,7 @@ export function exportStageToPng(stage: Konva.Stage, opts: ExportOptions): strin
   stage.y(0);
   stage.scale({ x: 1, y: 1 });
 
-  const box = computeBBox(stage);
+  const box = opts.bbox ?? computeBBox(stage);
 
   const bgLayer = stage.findOne<Konva.Layer>('#bg-layer');
   let bgRect: Konva.Rect | null = null;

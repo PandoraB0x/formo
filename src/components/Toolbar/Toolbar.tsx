@@ -36,6 +36,7 @@ import {
 import {
   exportActivePageToPdf,
   exportAllPagesToPdf,
+  exportSelectionToPdf,
   downloadPdf,
 } from '@/lib/exportPdf';
 import { saveSnippet } from '@/lib/snippetStorage';
@@ -199,6 +200,48 @@ export default function Toolbar({ stageRef }: Props) {
     const suffix = bg === 'grid' ? '_ruudud' : bg === 'white' ? '_valge' : '_labipaistev';
     downloadDataUrl(url, `${board.name.replace(/\s+/g, '_')}${suffix}.png`);
     setExportMenuOpen(false);
+  }
+
+  function getSelectionBBox(): { x: number; y: number; width: number; height: number } | null {
+    const state = useBoardStore.getState();
+    const page = state.board.pages.find((p) => p.id === state.board.activePageId) ?? state.board.pages[0];
+    const ids = state.selectedIds.length ? state.selectedIds : state.selectedId ? [state.selectedId] : [];
+    const chosen = page.elements.filter((e) => ids.includes(e.id));
+    if (chosen.length === 0) return null;
+    const minX = Math.min(...chosen.map((e) => e.x));
+    const minY = Math.min(...chosen.map((e) => e.y));
+    const maxX = Math.max(...chosen.map((e) => e.x + e.width));
+    const maxY = Math.max(...chosen.map((e) => e.y + e.height));
+    return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
+  }
+
+  function handleExportSelectionPng(bg: ExportBackground) {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const bbox = getSelectionBBox();
+    if (!bbox) {
+      showFlash('Vali elemendid');
+      return;
+    }
+    const pad = 8;
+    const padded = { x: bbox.x - pad, y: bbox.y - pad, width: bbox.width + pad * 2, height: bbox.height + pad * 2 };
+    const url = exportStageToPng(stage, { background: bg, pixelRatio: 2, bbox: padded });
+    const suffix = bg === 'grid' ? '_ruudud' : bg === 'white' ? '_valge' : '_labipaistev';
+    downloadDataUrl(url, `${board.name.replace(/\s+/g, '_')}_valem${suffix}.png`);
+    setExportMenuOpen(false);
+  }
+
+  function handleExportSelectionPdf(bg: ExportBackground) {
+    const stage = stageRef.current;
+    if (!stage) return;
+    const bbox = getSelectionBBox();
+    if (!bbox) {
+      showFlash('Vali elemendid');
+      return;
+    }
+    const pdf = exportSelectionToPdf(stage, bbox, { background: bg });
+    downloadPdf(pdf, `${board.name.replace(/\s+/g, '_')}_valem.pdf`);
+    setPdfMenuOpen(false);
   }
 
   async function handleCopy() {
@@ -461,7 +504,10 @@ export default function Toolbar({ stageRef }: Props) {
             <span className="ml-1 text-xs">PNG</span>
           </button>
           {exportMenuOpen && (
-            <div className="absolute right-0 top-full z-30 mt-1 w-52 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-xl">
+            <div className="absolute right-0 top-full z-30 mt-1 w-56 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-xl">
+              <div className="border-b border-neutral-100 bg-neutral-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                Kogu leht
+              </div>
               <button
                 type="button"
                 onClick={() => handleExport('grid')}
@@ -504,6 +550,25 @@ export default function Toolbar({ stageRef }: Props) {
                     backgroundPosition: '0 0, 0 3px, 3px -3px, -3px 0',
                   }}
                 />
+                Läbipaistev
+              </button>
+              <div className="border-y border-neutral-100 bg-neutral-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                Valitud ala {hasSelection ? `(${selectedIds.length})` : ''}
+              </div>
+              <button
+                type="button"
+                disabled={!hasSelection}
+                onClick={() => handleExportSelectionPng('white')}
+                className="block w-full px-3 py-2 text-left text-xs hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Valge taust
+              </button>
+              <button
+                type="button"
+                disabled={!hasSelection}
+                onClick={() => handleExportSelectionPng('transparent')}
+                className="block w-full px-3 py-2 text-left text-xs hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
                 Läbipaistev
               </button>
             </div>
@@ -553,6 +618,25 @@ export default function Toolbar({ stageRef }: Props) {
                 type="button"
                 onClick={() => handleExportPdfAll('transparent')}
                 className="block w-full px-3 py-2 text-left text-xs hover:bg-neutral-50"
+              >
+                Läbipaistev
+              </button>
+              <div className="border-y border-neutral-100 bg-neutral-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+                Valitud ala {hasSelection ? `(${selectedIds.length})` : ''}
+              </div>
+              <button
+                type="button"
+                disabled={!hasSelection}
+                onClick={() => handleExportSelectionPdf('white')}
+                className="block w-full px-3 py-2 text-left text-xs hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
+              >
+                Valge taustaga
+              </button>
+              <button
+                type="button"
+                disabled={!hasSelection}
+                onClick={() => handleExportSelectionPdf('transparent')}
+                className="block w-full px-3 py-2 text-left text-xs hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
               >
                 Läbipaistev
               </button>
