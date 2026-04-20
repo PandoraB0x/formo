@@ -1,4 +1,5 @@
 import type { BoardElement, ElementType, ElementContent } from '@/types/element';
+import { SHAPE_MAP } from '@/lib/shapes';
 
 let counter = 0;
 function uid(): string {
@@ -20,6 +21,7 @@ const DEFAULTS: Record<ElementType, { width: number; height: number; fontSize: n
   subscript: { width: 90, height: 90, fontSize: 56 },
   sqrt: { width: 120, height: 100, fontSize: 56 },
   line: { width: 200, height: 6, fontSize: 64 },
+  shape: { width: 140, height: 120, fontSize: 64 },
 };
 
 const TEXT_WIDTH_FACTOR = 0.58;
@@ -62,6 +64,13 @@ export function makeElement(
     const sz = computeFractionSize(content, d.fontSize);
     width = sz.width;
     height = sz.height;
+  }
+  if (type === 'shape' && typeof content === 'string') {
+    const def = SHAPE_MAP.get(content);
+    if (def) {
+      width = def.width;
+      height = def.height;
+    }
   }
   return {
     id: uid(),

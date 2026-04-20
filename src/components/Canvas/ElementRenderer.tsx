@@ -4,6 +4,7 @@ import { Group, Text, Line, Path } from 'react-konva';
 import type { BoardElement } from '@/types/element';
 import { useBoardStore } from '@/store/useBoardStore';
 import { fontStack } from '@/lib/constants';
+import ShapeRenderer from './ShapeRenderer';
 
 interface Props {
   element: BoardElement;
@@ -50,6 +51,11 @@ export default function ElementRenderer({ element }: Props) {
           listening={false}
         />
       );
+    }
+
+    case 'shape': {
+      const shapeId = typeof content === 'string' ? content : '';
+      return <ShapeRenderer shapeId={shapeId} width={width} height={height} color={color} />;
     }
 
     case 'fraction': {

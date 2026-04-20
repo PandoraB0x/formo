@@ -9,7 +9,8 @@ export type ElementType =
   | 'subscript'
   | 'sqrt'
   | 'text'
-  | 'line';
+  | 'line'
+  | 'shape';
 
 export type ElementContent =
   | string

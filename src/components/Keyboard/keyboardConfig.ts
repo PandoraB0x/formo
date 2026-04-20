@@ -1,4 +1,14 @@
 import type { KeyboardGroup, KeyboardKey } from '@/types/element';
+import { getShapesByCategory } from '@/lib/shapes';
+
+function shapeKeys(category: '2d-solid' | '2d-dashed' | '3d'): KeyboardKey[] {
+  return getShapesByCategory(category).map((s) => ({
+    label: s.label,
+    type: 'shape' as const,
+    content: s.id,
+    hint: s.hint,
+  }));
+}
 
 export const KEYBOARD_GROUPS: KeyboardGroup[] = [
   {
@@ -249,6 +259,18 @@ export const KEYBOARD_GROUPS: KeyboardGroup[] = [
       { label: '—', type: 'line', content: '', hint: 'Joon (vabalt venitav)' },
       { label: 'Aa', type: 'text', content: 'tekst', hint: 'Silt (tekst)' },
     ],
+  },
+  {
+    title: 'Kujundid 2D',
+    keys: shapeKeys('2d-solid'),
+  },
+  {
+    title: 'Kujundid 2D punktiir',
+    keys: shapeKeys('2d-dashed'),
+  },
+  {
+    title: 'Kujundid 3D',
+    keys: shapeKeys('3d'),
   },
 ];
 
