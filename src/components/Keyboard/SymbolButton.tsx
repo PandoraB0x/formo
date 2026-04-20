@@ -11,7 +11,7 @@ interface Props {
   onTogglePin?: (k: KeyboardKey) => void;
   onRemove?: (k: KeyboardKey) => void;
   pinned?: boolean;
-  size?: 'sm' | 'md';
+  size?: 'sm' | 'md' | 'lg';
 }
 
 export default function SymbolButton({
@@ -22,8 +22,8 @@ export default function SymbolButton({
   pinned,
   size = 'md',
 }: Props) {
-  const dim = size === 'sm' ? 'h-9' : 'h-11';
-  const shapeDim = size === 'sm' ? 'h-6 w-6' : 'h-7 w-7';
+  const dim = size === 'sm' ? 'h-9 text-sm' : size === 'lg' ? 'h-16 text-xl' : 'h-11 text-sm';
+  const shapeDim = size === 'sm' ? 'h-6 w-6' : size === 'lg' ? 'h-10 w-10' : 'h-7 w-7';
   return (
     <button
       type="button"
@@ -41,7 +41,7 @@ export default function SymbolButton({
         (k.hint ? `${k.label} — ${k.hint}` : k.label) +
         (onTogglePin ? '  (parem klõps — kinnita)' : '')
       }
-      className={`group/sym relative flex ${dim} items-center justify-center overflow-hidden rounded-md border bg-white px-1 text-sm font-medium text-neutral-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow active:translate-y-0 ${
+      className={`group/sym relative flex ${dim} items-center justify-center overflow-hidden rounded-md border bg-white px-1 font-medium text-neutral-800 shadow-sm transition hover:-translate-y-0.5 hover:shadow active:translate-y-0 ${
         pinned
           ? 'border-amber-300 hover:border-amber-400'
           : 'border-neutral-200 hover:border-neutral-400'

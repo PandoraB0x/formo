@@ -100,29 +100,29 @@ export default function SymbolDock() {
       }}
       onDragLeave={() => setDragOver(false)}
       onDrop={onDrop}
-      className={`flex h-full w-24 shrink-0 flex-col border-r border-neutral-200 bg-neutral-50 ${
+      className={`flex h-full w-48 shrink-0 flex-col border-r border-neutral-200 bg-neutral-50 ${
         dragOver ? 'ring-2 ring-inset ring-matcha-400' : ''
       }`}
     >
-      <div className="flex-1 overflow-y-auto p-2">
-        <section className="mb-3">
-          <h3 className="mb-1.5 flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-neutral-400">
-            <Pin size={10} />
+      <div className="flex-1 overflow-y-auto p-3">
+        <section className="mb-4">
+          <h3 className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-neutral-400">
+            <Pin size={12} />
             Kinnitatud
           </h3>
           {pinned.length === 0 ? (
-            <div className="rounded-md border border-dashed border-neutral-300 bg-white px-1 py-3 text-center text-[10px] leading-tight text-neutral-400">
+            <div className="rounded-md border border-dashed border-neutral-300 bg-white px-2 py-6 text-center text-xs leading-snug text-neutral-400">
               Lohista siia
               <br />
               sümbol ülevalt
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-2 gap-2">
               {pinned.map((k) => (
                 <SymbolButton
                   key={keyId(k) + 'pin'}
                   k={k}
-                  size="sm"
+                  size="lg"
                   onPress={handlePress}
                   onTogglePin={togglePin}
                   onRemove={unpin}
@@ -135,9 +135,9 @@ export default function SymbolDock() {
 
         {recent.length > 0 && (
           <section>
-            <div className="mb-1.5 flex items-center justify-between">
-              <h3 className="flex items-center gap-1 text-[10px] font-medium uppercase tracking-wide text-neutral-400">
-                <Clock size={10} />
+            <div className="mb-2 flex items-center justify-between">
+              <h3 className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-neutral-400">
+                <Clock size={12} />
                 Hiljuti
               </h3>
               <button
@@ -146,18 +146,18 @@ export default function SymbolDock() {
                   clearRecentKeys();
                   setRecent([]);
                 }}
-                className="text-[9px] text-neutral-400 hover:text-neutral-700"
+                className="text-[11px] text-neutral-400 hover:text-neutral-700"
                 title="Tühjenda"
               >
-                ×
+                tühjenda
               </button>
             </div>
-            <div className="grid grid-cols-2 gap-1.5">
+            <div className="grid grid-cols-2 gap-2">
               {recent.map((k) => (
                 <SymbolButton
                   key={keyId(k) + 'rec'}
                   k={k}
-                  size="sm"
+                  size="lg"
                   onPress={handlePress}
                   onTogglePin={togglePin}
                   pinned={pinnedIds.includes(keyId(k))}
@@ -171,15 +171,11 @@ export default function SymbolDock() {
       {ready && !loggedIn && (
         <Link
           href="/login"
-          className="flex items-center gap-1.5 border-t border-neutral-200 bg-amber-50/70 px-2 py-2 text-[10px] leading-tight text-amber-800 hover:bg-amber-50"
+          className="flex items-center gap-2 border-t border-neutral-200 bg-amber-50/70 px-3 py-3 text-xs leading-snug text-amber-800 hover:bg-amber-50"
           title="Logi sisse, et dokk salvestuks"
         >
-          <LogIn size={11} className="shrink-0" />
-          <span>
-            Logi sisse — dokk
-            <br />
-            salvestub sulle
-          </span>
+          <LogIn size={14} className="shrink-0" />
+          <span>Logi sisse — dokk salvestub sulle.</span>
         </Link>
       )}
     </aside>
