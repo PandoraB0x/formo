@@ -43,6 +43,13 @@ export default function LandingPage() {
           <span className="text-lg font-bold tracking-tight text-matcha-900">Formo</span>
         </div>
         <div className="flex items-center gap-3 text-sm">
+          <Link
+            href="/abi"
+            className="hidden items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-matcha-700 transition hover:bg-matcha-50 sm:flex"
+          >
+            <BookOpen size={14} />
+            Juhend
+          </Link>
           {loggedIn && user ? (
             <>
               <span className="hidden text-matcha-700 sm:inline">
@@ -139,7 +146,16 @@ export default function LandingPage() {
           </button>
         </div>
 
-        <p className="mt-8 max-w-md text-xs text-neutral-400">
+        <Link
+          href="/abi"
+          className="mt-8 inline-flex items-center gap-1.5 rounded-full border border-matcha-200 bg-white/60 px-4 py-1.5 text-sm font-medium text-matcha-700 backdrop-blur transition hover:border-matcha-400 hover:text-matcha-900"
+        >
+          <BookOpen size={14} />
+          Vaata juhendit
+          <ArrowRight size={14} />
+        </Link>
+
+        <p className="mt-6 max-w-md text-xs text-neutral-400">
           Külaliserežiim töötab täiesti kohalikult — ühtegi faili
           serverisse ei saadeta.
         </p>
