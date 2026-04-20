@@ -588,16 +588,20 @@ function MultiSelectionPopup({ count }: { count: number }) {
 }
 
 function GridBackground({ width, height }: { width: number; height: number }) {
-  const step = 40;
+  const step = 5 * (96 / 25.4);
+  const minor = '#eef0f3';
+  const major = '#dfe3ea';
   const lines: React.ReactNode[] = [];
-  for (let x = step; x < width; x += step) {
+  let i = 1;
+  for (let x = step; x < width; x += step, i++) {
     lines.push(
-      <Rect key={`v${x}`} x={x} y={0} width={1} height={height} fill="#e5e7eb" listening={false} />,
+      <Rect key={`v${i}`} x={x} y={0} width={1} height={height} fill={i % 5 === 0 ? major : minor} listening={false} />,
     );
   }
-  for (let y = step; y < height; y += step) {
+  i = 1;
+  for (let y = step; y < height; y += step, i++) {
     lines.push(
-      <Rect key={`h${y}`} x={0} y={y} width={width} height={1} fill="#e5e7eb" listening={false} />,
+      <Rect key={`h${i}`} x={0} y={y} width={width} height={1} fill={i % 5 === 0 ? major : minor} listening={false} />,
     );
   }
   return <>{lines}</>;
