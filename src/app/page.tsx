@@ -6,12 +6,12 @@ import {
   ArrowRight,
   Rocket,
   FolderHeart,
-  LogIn,
   HelpCircle,
   Sparkles,
   PenLine,
 } from 'lucide-react';
-import { useAuth, logout } from '@/lib/auth';
+import { useAuth } from '@/lib/auth';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
 
 export default function LandingPage() {
   const router = useRouter();
@@ -46,27 +46,8 @@ export default function LandingPage() {
         }}
       />
 
-      <div className="absolute right-4 top-4 z-20 flex items-center gap-2">
-        {loggedIn && user ? (
-          <>
-            <span className="hidden text-sm text-matcha-700 sm:inline">{user.name}</span>
-            <button
-              type="button"
-              onClick={() => logout()}
-              className="rounded-full border border-matcha-200 bg-white/80 px-4 py-1.5 text-sm font-medium text-matcha-700 backdrop-blur transition hover:border-matcha-400 hover:text-matcha-900"
-            >
-              Logi välja
-            </button>
-          </>
-        ) : (
-          <Link
-            href="/login"
-            className="flex items-center gap-1.5 rounded-full border border-matcha-200 bg-white/80 px-4 py-1.5 text-sm font-medium text-matcha-700 backdrop-blur transition hover:border-matcha-400 hover:text-matcha-900"
-          >
-            <LogIn size={14} />
-            Logi sisse
-          </Link>
-        )}
+      <div className="absolute right-4 top-4 z-20">
+        <LanguageSwitcher />
       </div>
 
       <div className="relative z-10 mb-10 text-center md:mb-14">
