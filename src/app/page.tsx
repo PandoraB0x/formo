@@ -2,13 +2,20 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { ArrowRight, Sparkles, FolderHeart, LogIn, Rocket, BookOpen } from 'lucide-react';
+import {
+  ArrowRight,
+  Rocket,
+  FolderHeart,
+  LogIn,
+  HelpCircle,
+  Sparkles,
+  PenLine,
+} from 'lucide-react';
 import { useAuth, logout } from '@/lib/auth';
 
 export default function LandingPage() {
   const router = useRouter();
   const { user, ready } = useAuth();
-
   const loggedIn = ready && !!user;
 
   function goWorks() {
@@ -16,18 +23,22 @@ export default function LandingPage() {
   }
 
   return (
-    <main className="relative min-h-screen overflow-hidden bg-[#fafaf5]">
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-[#fafaf5] p-6">
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0"
-        style={{
-          backgroundImage:
-            'radial-gradient(circle at 15% 10%, rgba(143,181,105,0.22), transparent 50%), radial-gradient(circle at 85% 90%, rgba(204,219,174,0.5), transparent 55%)',
-        }}
+        className="pointer-events-none absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-matcha-300/40 blur-3xl"
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.07]"
+        className="pointer-events-none absolute -bottom-40 -right-40 h-[520px] w-[520px] rounded-full bg-matcha-400/30 blur-3xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 rounded-full bg-matcha-200/30 blur-2xl"
+      />
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 opacity-[0.05]"
         style={{
           backgroundImage:
             'linear-gradient(to right, #2d3d1f 1px, transparent 1px), linear-gradient(to bottom, #2d3d1f 1px, transparent 1px)',
@@ -35,131 +46,142 @@ export default function LandingPage() {
         }}
       />
 
-      <header className="relative z-10 flex items-center justify-between px-6 py-5 md:px-10">
-        <div className="flex items-center gap-2">
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-matcha-500 text-white shadow-sm">
-            <Sparkles size={18} strokeWidth={2.4} />
-          </span>
-          <span className="text-lg font-bold tracking-tight text-matcha-900">Formo</span>
-        </div>
-        <div className="flex items-center gap-3 text-sm">
-          <Link
-            href="/abi"
-            className="hidden items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium text-matcha-700 transition hover:bg-matcha-50 sm:flex"
-          >
-            <BookOpen size={14} />
-            Juhend
-          </Link>
-          {loggedIn && user ? (
-            <>
-              <span className="hidden text-matcha-700 sm:inline">
-                {user.name}
-              </span>
-              <button
-                type="button"
-                onClick={() => {
-                  logout();
-                }}
-                className="rounded-full border border-matcha-200 bg-white px-4 py-1.5 text-sm font-medium text-matcha-700 transition hover:border-matcha-400 hover:text-matcha-900"
-              >
-                Logi välja
-              </button>
-            </>
-          ) : (
-            <Link
-              href="/login"
-              className="flex items-center gap-1.5 rounded-full border border-matcha-200 bg-white px-4 py-1.5 text-sm font-medium text-matcha-700 transition hover:border-matcha-400 hover:text-matcha-900"
+      <div className="absolute right-4 top-4 z-20 flex items-center gap-2">
+        {loggedIn && user ? (
+          <>
+            <span className="hidden text-sm text-matcha-700 sm:inline">{user.name}</span>
+            <button
+              type="button"
+              onClick={() => logout()}
+              className="rounded-full border border-matcha-200 bg-white/80 px-4 py-1.5 text-sm font-medium text-matcha-700 backdrop-blur transition hover:border-matcha-400 hover:text-matcha-900"
             >
-              <LogIn size={14} />
-              Logi sisse
-            </Link>
-          )}
-        </div>
-      </header>
+              Logi välja
+            </button>
+          </>
+        ) : (
+          <Link
+            href="/login"
+            className="flex items-center gap-1.5 rounded-full border border-matcha-200 bg-white/80 px-4 py-1.5 text-sm font-medium text-matcha-700 backdrop-blur transition hover:border-matcha-400 hover:text-matcha-900"
+          >
+            <LogIn size={14} />
+            Logi sisse
+          </Link>
+        )}
+      </div>
 
-      <section className="relative z-10 mx-auto flex max-w-5xl flex-col items-center px-6 pb-16 pt-10 text-center md:pt-20">
-        <span className="mb-4 inline-flex items-center gap-1.5 rounded-full border border-matcha-200 bg-white px-3 py-1 text-xs font-semibold uppercase tracking-wider text-matcha-700">
-          <BookOpen size={12} />
-          Matemaatika tahvel
-        </span>
-        <h1 className="text-5xl font-black tracking-tighter text-matcha-900 md:text-7xl">
+      <div className="relative z-10 mb-10 text-center md:mb-14">
+        <h1 className="bg-gradient-to-br from-matcha-500 via-matcha-600 to-matcha-800 bg-clip-text text-8xl font-black leading-none tracking-tighter text-transparent md:text-9xl">
           Formo
         </h1>
-        <p className="mt-4 max-w-xl text-balance text-base text-neutral-600 md:text-lg">
-          Kiire visuaalne tahvel valemite, ülesannete ja selgituste loomiseks.
-          Lohista, kirjuta, ekspordi PNG või PDF.
-        </p>
-
-        <div className="mt-10 grid w-full max-w-2xl gap-4 md:grid-cols-2">
-          <Link
-            href="/app"
-            className="group relative overflow-hidden rounded-2xl border border-matcha-300 bg-gradient-to-br from-matcha-400 to-matcha-600 p-[1.5px] shadow-lg shadow-matcha-500/30 transition hover:shadow-matcha-500/50"
-          >
-            <div className="flex h-full flex-col items-start gap-3 rounded-[14px] bg-gradient-to-br from-matcha-500 to-matcha-700 p-5 text-left text-white md:p-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur">
-                <Rocket size={22} strokeWidth={2.2} />
-              </div>
-              <div>
-                <p className="text-lg font-bold md:text-xl">Alusta kohe</p>
-                <p className="mt-1 text-sm text-matcha-50/90">
-                  Külaliserežiim ilma kontota. Töid ei salvestata — joonista,
-                  lae alla ja mine edasi.
-                </p>
-              </div>
-              <span className="mt-auto flex items-center gap-1 text-sm font-semibold">
-                Ava tahvel
-                <ArrowRight
-                  size={16}
-                  className="transition group-hover:translate-x-1"
-                />
-              </span>
-            </div>
-          </Link>
-
-          <button
-            type="button"
-            onClick={() => (loggedIn ? goWorks() : router.push('/login'))}
-            className="group relative overflow-hidden rounded-2xl border border-neutral-200 bg-white p-[1.5px] text-left shadow-sm transition hover:border-matcha-300 hover:shadow-md"
-          >
-            <div className="flex h-full flex-col items-start gap-3 rounded-[14px] bg-white p-5 md:p-6">
-              <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-matcha-100 text-matcha-700">
-                <FolderHeart size={22} strokeWidth={2.2} />
-              </div>
-              <div>
-                <p className="text-lg font-bold text-matcha-900 md:text-xl">
-                  {loggedIn ? 'Minu tööd' : 'Logi sisse'}
-                </p>
-                <p className="mt-1 text-sm text-neutral-600">
-                  {loggedIn
-                    ? 'Vaata oma salvestatud tahvleid ja valemite raamatukogu.'
-                    : 'Salvesta tööd, ava hiljem uuesti, ehita oma valemite raamatukogu.'}
-                </p>
-              </div>
-              <span className="mt-auto flex items-center gap-1 text-sm font-semibold text-matcha-700">
-                {loggedIn ? 'Ava minu tööd' : 'Logi sisse'}
-                <ArrowRight
-                  size={16}
-                  className="transition group-hover:translate-x-1"
-                />
-              </span>
-            </div>
-          </button>
+        <div className="mt-3 flex items-center justify-center gap-2">
+          <div className="h-px w-12 bg-gradient-to-r from-transparent to-matcha-500" />
+          <div className="flex items-center gap-1.5 text-sm uppercase tracking-widest text-matcha-700/70">
+            <Sparkles size={11} className="text-matcha-500" />
+            Matemaatika tahvel
+          </div>
+          <div className="h-px w-12 bg-gradient-to-l from-transparent to-matcha-500" />
         </div>
+      </div>
 
-        <Link
-          href="/abi"
-          className="mt-8 inline-flex items-center gap-1.5 rounded-full border border-matcha-200 bg-white/60 px-4 py-1.5 text-sm font-medium text-matcha-700 backdrop-blur transition hover:border-matcha-400 hover:text-matcha-900"
-        >
-          <BookOpen size={14} />
-          Vaata juhendit
-          <ArrowRight size={14} />
+      <div className="relative z-10 w-full max-w-sm space-y-4 md:max-w-2xl md:grid md:grid-cols-2 md:gap-5 md:space-y-0">
+        <Link href="/app" className="group block">
+          <div
+            className="h-full rounded-2xl p-[1.5px] shadow-lg shadow-matcha-600/25 transition-shadow group-hover:shadow-matcha-600/40"
+            style={{ background: 'linear-gradient(135deg, #a8cd87, #8fb569 50%, #587b3e)' }}
+          >
+            <div
+              className="flex h-full w-full items-center gap-4 rounded-[14px] px-5 py-5 transition-colors md:py-6"
+              style={{ background: 'linear-gradient(135deg, #8fb569, #587b3e)' }}
+            >
+              <div
+                className="flex shrink-0 items-center justify-center rounded-2xl shadow-md"
+                style={{
+                  width: 64,
+                  height: 64,
+                  background: 'linear-gradient(135deg, #a8cd87, #6f9850)',
+                }}
+              >
+                <Rocket size={32} className="text-white" strokeWidth={2.2} />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xl font-bold leading-tight text-white md:text-2xl">
+                  Alusta kohe
+                </p>
+                <p className="mt-0.5 text-sm leading-snug text-matcha-50/90 md:text-base">
+                  Külaliserežiim ilma kontota
+                </p>
+              </div>
+              <ArrowRight
+                size={18}
+                className="ml-auto shrink-0 text-matcha-50 transition-transform group-hover:translate-x-1"
+              />
+            </div>
+          </div>
         </Link>
 
-        <p className="mt-6 max-w-md text-xs text-neutral-400">
-          Külaliserežiim töötab täiesti kohalikult — ühtegi faili
-          serverisse ei saadeta.
-        </p>
-      </section>
-    </main>
+        <button
+          type="button"
+          onClick={() => (loggedIn ? goWorks() : router.push('/login'))}
+          className="group block text-left"
+        >
+          <div
+            className="h-full rounded-2xl p-[1.5px] shadow-lg shadow-matcha-400/20 transition-shadow group-hover:shadow-matcha-500/40"
+            style={{ background: 'linear-gradient(135deg, #d6e4c1, #8fb569 50%, #6f9850)' }}
+          >
+            <div className="flex h-full w-full items-center gap-4 rounded-[14px] bg-white px-5 py-5 transition-colors group-hover:bg-matcha-50/60 md:py-6">
+              <div
+                className="flex shrink-0 items-center justify-center rounded-2xl shadow-md"
+                style={{
+                  width: 64,
+                  height: 64,
+                  background: 'linear-gradient(135deg, #d6e4c1, #8fb569)',
+                }}
+              >
+                {loggedIn ? (
+                  <FolderHeart size={32} className="text-white" strokeWidth={2.2} />
+                ) : (
+                  <PenLine size={32} className="text-white" strokeWidth={2.2} />
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-xl font-bold leading-tight text-matcha-900 md:text-2xl">
+                  {loggedIn ? 'Minu tööd' : 'Logi sisse'}
+                </p>
+                <p className="mt-0.5 text-sm leading-snug text-matcha-700/80 md:text-base">
+                  {loggedIn
+                    ? 'Salvestatud tahvlid ja valemid'
+                    : 'Salvesta tahvleid ja valemeid'}
+                </p>
+              </div>
+              <ArrowRight
+                size={18}
+                className="ml-auto shrink-0 text-matcha-500 transition-transform group-hover:translate-x-1"
+              />
+            </div>
+          </div>
+        </button>
+      </div>
+
+      <div className="relative z-10 mt-8">
+        <Link
+          href="/abi"
+          className="group flex min-h-[44px] items-center gap-2 px-3 py-2.5 text-sm font-medium text-matcha-700/85 transition-colors"
+        >
+          <HelpCircle size={14} className="text-matcha-500/70 transition-colors group-hover:text-matcha-700" />
+          <span className="transition-colors group-hover:text-matcha-900">
+            Vaata juhendit
+          </span>
+          <ArrowRight
+            size={13}
+            className="transition-transform group-hover:translate-x-1"
+          />
+        </Link>
+      </div>
+
+      <p className="relative z-10 mt-6 flex items-center gap-1.5 text-xs text-neutral-400">
+        <Sparkles size={10} />
+        Külaliserežiim töötab täiesti kohalikult
+      </p>
+    </div>
   );
 }
