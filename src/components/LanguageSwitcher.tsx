@@ -1,38 +1,10 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { DEFAULT_LANG, LANGS, type Lang } from '@/i18n/types';
-
-const STORAGE_KEY = 'formo:lang:v1';
-
-function readStoredLang(): Lang {
-  if (typeof window === 'undefined') return DEFAULT_LANG;
-  try {
-    const v = window.localStorage.getItem(STORAGE_KEY);
-    if (v === 'et' || v === 'en' || v === 'ru') return v;
-  } catch {}
-  return DEFAULT_LANG;
-}
+import { LANGS } from '@/i18n/types';
+import { useLang } from '@/i18n/useLang';
 
 export default function LanguageSwitcher({ compact = false }: { compact?: boolean }) {
-  const [lang, setLangState] = useState<Lang>(DEFAULT_LANG);
-
-  useEffect(() => {
-    setLangState(readStoredLang());
-    const onStorage = (e: StorageEvent) => {
-      if (e.key === STORAGE_KEY) setLangState(readStoredLang());
-    };
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, []);
-
-  function changeLang(next: Lang) {
-    setLangState(next);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, next);
-      window.dispatchEvent(new Event('formo:lang'));
-    } catch {}
-  }
+  const { lang, setLang } = useLang();
 
   return (
     <div className="flex items-center gap-0.5">
@@ -42,7 +14,7 @@ export default function LanguageSwitcher({ compact = false }: { compact?: boolea
           <button
             key={code}
             type="button"
-            onClick={() => changeLang(code)}
+            onClick={() => setLang(code)}
             title={code}
             aria-pressed={active}
             className={[

@@ -12,11 +12,14 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth';
 import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { useLang } from '@/i18n/useLang';
 
 export default function LandingPage() {
   const router = useRouter();
   const { user, ready } = useAuth();
   const loggedIn = ready && !!user;
+  const { t } = useLang();
+  const L = t.landing;
 
   function goWorks() {
     router.push('/works');
@@ -58,7 +61,7 @@ export default function LandingPage() {
           <div className="h-px w-12 bg-gradient-to-r from-transparent to-matcha-500" />
           <div className="flex items-center gap-1.5 text-sm uppercase tracking-widest text-matcha-700/70">
             <Sparkles size={11} className="text-matcha-500" />
-            Matemaatika tahvel
+            {L.eyebrow}
           </div>
           <div className="h-px w-12 bg-gradient-to-l from-transparent to-matcha-500" />
         </div>
@@ -86,10 +89,10 @@ export default function LandingPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xl font-bold leading-tight text-white md:text-2xl">
-                  Alusta kohe
+                  {L.startNow}
                 </p>
                 <p className="mt-0.5 text-sm leading-snug text-matcha-50/90 md:text-base">
-                  Külaliserežiim ilma kontota
+                  {L.startNowDesc}
                 </p>
               </div>
               <ArrowRight
@@ -126,12 +129,10 @@ export default function LandingPage() {
               </div>
               <div className="min-w-0 flex-1">
                 <p className="text-xl font-bold leading-tight text-matcha-900 md:text-2xl">
-                  {loggedIn ? 'Minu tööd' : 'Logi sisse'}
+                  {loggedIn ? L.myWorks : L.loginBtn}
                 </p>
                 <p className="mt-0.5 text-sm leading-snug text-matcha-700/80 md:text-base">
-                  {loggedIn
-                    ? 'Salvestatud tahvlid ja valemid'
-                    : 'Salvesta tahvleid ja valemeid'}
+                  {loggedIn ? L.myWorksDesc : L.loginDesc}
                 </p>
               </div>
               <ArrowRight
@@ -150,7 +151,7 @@ export default function LandingPage() {
         >
           <HelpCircle size={14} className="text-matcha-500/70 transition-colors group-hover:text-matcha-700" />
           <span className="transition-colors group-hover:text-matcha-900">
-            Vaata juhendit
+            {L.seeGuide}
           </span>
           <ArrowRight
             size={13}
@@ -161,7 +162,7 @@ export default function LandingPage() {
 
       <p className="relative z-10 mt-6 flex items-center gap-1.5 text-xs text-neutral-400">
         <Sparkles size={10} />
-        Külaliserežiim töötab täiesti kohalikult
+        {L.footer}
       </p>
     </div>
   );
