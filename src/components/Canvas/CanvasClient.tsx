@@ -10,6 +10,7 @@ import { useBoardStore } from '@/store/useBoardStore';
 
 export default function CanvasClient() {
   const stageRef = useRef<Konva.Stage | null>(null);
+  const clipboardRef = useRef<string[]>([]);
 
   const undo = useBoardStore((s) => s.undo);
   const redo = useBoardStore((s) => s.redo);
@@ -37,6 +38,29 @@ export default function CanvasClient() {
       if (meta && e.key.toLowerCase() === 'd') {
         e.preventDefault();
         duplicateSelected();
+        return;
+      }
+      if (meta && e.key.toLowerCase() === 'c') {
+        const ids = useBoardStore.getState().selectedIds;
+        if (ids.length) {
+          e.preventDefault();
+          clipboardRef.current = ids;
+        }
+        return;
+      }
+      if (meta && e.key.toLowerCase() === 'v') {
+        const ids = clipboardRef.current;
+        if (ids.length) {
+          e.preventDefault();
+          const state = useBoardStore.getState();
+          const page = state.board.pages.find((p) => p.id === state.board.activePageId) ?? state.board.pages[0];
+          const stillExist = ids.filter((id) => page.elements.some((el) => el.id === id));
+          if (stillExist.length) {
+            setSelection(stillExist);
+            duplicateSelected();
+            clipboardRef.current = useBoardStore.getState().selectedIds;
+          }
+        }
         return;
       }
       if (meta && e.key.toLowerCase() === 'a') {

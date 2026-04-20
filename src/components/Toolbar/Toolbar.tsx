@@ -92,8 +92,8 @@ export default function Toolbar({ stageRef }: Props) {
 
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
-  const { user } = useAuth();
-  const isGuest = !user;
+  const { user, ready } = useAuth();
+  const isGuest = ready && !user;
 
   useEffect(() => {
     if (!exportMenuOpen) return;
@@ -208,10 +208,10 @@ export default function Toolbar({ stageRef }: Props) {
     const ids = state.selectedIds.length ? state.selectedIds : state.selectedId ? [state.selectedId] : [];
     const chosen = page.elements.filter((e) => ids.includes(e.id));
     if (chosen.length === 0) return null;
-    const minX = Math.min(...chosen.map((e) => e.x));
-    const minY = Math.min(...chosen.map((e) => e.y));
-    const maxX = Math.max(...chosen.map((e) => e.x + e.width));
-    const maxY = Math.max(...chosen.map((e) => e.y + e.height));
+    const minX = Math.min(...chosen.map((e) => e.x - e.width / 2));
+    const minY = Math.min(...chosen.map((e) => e.y - e.height / 2));
+    const maxX = Math.max(...chosen.map((e) => e.x + e.width / 2));
+    const maxY = Math.max(...chosen.map((e) => e.y + e.height / 2));
     return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
   }
 
@@ -272,10 +272,10 @@ export default function Toolbar({ stageRef }: Props) {
     const ids = state.selectedIds.length ? state.selectedIds : state.selectedId ? [state.selectedId] : [];
     const chosen = page.elements.filter((e) => ids.includes(e.id));
     if (chosen.length === 0) return undefined;
-    const minX = Math.min(...chosen.map((e) => e.x));
-    const minY = Math.min(...chosen.map((e) => e.y));
-    const maxX = Math.max(...chosen.map((e) => e.x + e.width));
-    const maxY = Math.max(...chosen.map((e) => e.y + e.height));
+    const minX = Math.min(...chosen.map((e) => e.x - e.width / 2));
+    const minY = Math.min(...chosen.map((e) => e.y - e.height / 2));
+    const maxX = Math.max(...chosen.map((e) => e.x + e.width / 2));
+    const maxY = Math.max(...chosen.map((e) => e.y + e.height / 2));
     const pad = 8;
     const sx = stage.x();
     const sy = stage.y();

@@ -33,6 +33,10 @@ export function exportStageToPng(stage: Konva.Stage, opts: ExportOptions): strin
   const trVisible = tr?.isVisible() ?? false;
   tr?.hide();
 
+  const outlines = stage.find<Konva.Rect>('.selection-outline');
+  const prevStrokes = outlines.map((o) => o.stroke());
+  outlines.forEach((o) => o.stroke('transparent'));
+
   const savedView = {
     x: stage.x(),
     y: stage.y(),
@@ -81,6 +85,7 @@ export function exportStageToPng(stage: Konva.Stage, opts: ExportOptions): strin
   bgRect?.destroy();
   if (bgLayerHidden) bgLayer?.show();
   if (trVisible) tr?.show();
+  outlines.forEach((o, i) => o.stroke(prevStrokes[i]));
 
   stage.x(savedView.x);
   stage.y(savedView.y);

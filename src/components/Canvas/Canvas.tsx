@@ -437,6 +437,7 @@ export default function Canvas({ stageRef }: CanvasProps) {
                   onDragEnd={(e) => handleDragEnd(el, e)}
                 >
                   <Rect
+                    name="selection-outline"
                     width={el.width}
                     height={el.height}
                     fill="transparent"

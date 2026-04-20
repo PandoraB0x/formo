@@ -504,14 +504,14 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     if (ids.length === 0) return null;
     const chosen = page.elements.filter((e) => ids.includes(e.id));
     if (chosen.length === 0) return null;
-    const minX = Math.min(...chosen.map((e) => e.x));
-    const minY = Math.min(...chosen.map((e) => e.y));
-    const maxX = Math.max(...chosen.map((e) => e.x + e.width));
-    const maxY = Math.max(...chosen.map((e) => e.y + e.height));
+    const minX = Math.min(...chosen.map((e) => e.x - e.width / 2));
+    const minY = Math.min(...chosen.map((e) => e.y - e.height / 2));
+    const maxX = Math.max(...chosen.map((e) => e.x + e.width / 2));
+    const maxY = Math.max(...chosen.map((e) => e.y + e.height / 2));
     const elements: SnippetElement[] = chosen.map((e) => ({
       ...e,
-      relX: e.x - minX,
-      relY: e.y - minY,
+      relX: e.x - e.width / 2 - minX,
+      relY: e.y - e.height / 2 - minY,
     }));
     const now = new Date().toISOString();
     return {
@@ -537,8 +537,8 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         typeof se.content === 'string'
           ? se.content
           : ({ ...se.content } as ElementContent),
-      x: worldPosition.x + se.relX,
-      y: worldPosition.y + se.relY,
+      x: worldPosition.x + se.relX + se.width / 2,
+      y: worldPosition.y + se.relY + se.height / 2,
       width: se.width,
       height: se.height,
       fontSize: se.fontSize,
