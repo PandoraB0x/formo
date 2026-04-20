@@ -7,6 +7,7 @@ import { KEYBOARD_GROUPS, flattenKeys, keyId } from './keyboardConfig';
 import { useBoardStore } from '@/store/useBoardStore';
 import { addRecentKey, getRecentKeys, clearRecentKeys } from '@/lib/recentKeys';
 import { getKeyboardPrefs, saveKeyboardPrefs, type KeyboardPrefs } from '@/lib/keyboardPrefs';
+import ShapePreviewSVG from './ShapePreviewSVG';
 
 const FAVORITES_TITLE = 'Lemmikud';
 
@@ -342,7 +343,14 @@ function KeyGrid({
                 : 'border-neutral-200 hover:border-neutral-400'
             }`}
           >
-            <span className="truncate">{key.label}</span>
+            {key.type === 'shape' && typeof key.content === 'string' ? (
+              <ShapePreviewSVG
+                shapeId={key.content}
+                className="h-7 w-7 text-matcha-700"
+              />
+            ) : (
+              <span className="truncate">{key.label}</span>
+            )}
             {isFavorite && (
               <Star
                 size={8}
