@@ -137,6 +137,90 @@ export default function Canvas({ stageRef }: CanvasProps) {
     fittedKeyRef.current = key;
   }, [size.width, size.height, pageWidth, pageHeight]);
 
+  const viewRef = useRef(view);
+  useEffect(() => {
+    viewRef.current = view;
+  }, [view]);
+
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+
+    interface Pinch {
+      initialScale: number;
+      initialDist: number;
+      initialMid: { x: number; y: number };
+      initialView: View;
+    }
+    let pinch: Pinch | null = null;
+
+    function touchData(touches: TouchList) {
+      const rect = el!.getBoundingClientRect();
+      const x1 = touches[0].clientX - rect.left;
+      const y1 = touches[0].clientY - rect.top;
+      const x2 = touches[1].clientX - rect.left;
+      const y2 = touches[1].clientY - rect.top;
+      return {
+        midX: (x1 + x2) / 2,
+        midY: (y1 + y2) / 2,
+        dist: Math.hypot(x2 - x1, y2 - y1),
+      };
+    }
+
+    function onStart(e: TouchEvent) {
+      if (e.touches.length === 2) {
+        e.preventDefault();
+        e.stopPropagation();
+        const d = touchData(e.touches);
+        const v = viewRef.current;
+        pinch = {
+          initialScale: v.scale,
+          initialDist: d.dist || 1,
+          initialMid: { x: d.midX, y: d.midY },
+          initialView: { ...v },
+        };
+        setRubber(null);
+      }
+    }
+
+    function onMove(e: TouchEvent) {
+      if (!pinch || e.touches.length < 2) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const d = touchData(e.touches);
+      const factor = d.dist / pinch.initialDist;
+      const newScale = Math.max(
+        MIN_SCALE,
+        Math.min(MAX_SCALE, pinch.initialScale * factor),
+      );
+      const worldX = (pinch.initialMid.x - pinch.initialView.x) / pinch.initialScale;
+      const worldY = (pinch.initialMid.y - pinch.initialView.y) / pinch.initialScale;
+      setView({
+        scale: newScale,
+        x: d.midX - worldX * newScale,
+        y: d.midY - worldY * newScale,
+      });
+    }
+
+    function onEnd(e: TouchEvent) {
+      if (pinch && e.touches.length < 2) {
+        pinch = null;
+      }
+    }
+
+    const opts = { capture: true, passive: false } as AddEventListenerOptions;
+    el.addEventListener('touchstart', onStart, opts);
+    el.addEventListener('touchmove', onMove, opts);
+    el.addEventListener('touchend', onEnd, { capture: true });
+    el.addEventListener('touchcancel', onEnd, { capture: true });
+    return () => {
+      el.removeEventListener('touchstart', onStart, opts);
+      el.removeEventListener('touchmove', onMove, opts);
+      el.removeEventListener('touchend', onEnd, { capture: true });
+      el.removeEventListener('touchcancel', onEnd, { capture: true });
+    };
+  }, []);
+
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent) {
       if (e.code !== 'Space' || e.repeat) return;

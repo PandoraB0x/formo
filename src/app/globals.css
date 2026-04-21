@@ -34,4 +34,24 @@ button {
 
 .konvajs-content {
   background: transparent;
+  touch-action: none;
+}
+
+.konvajs-content canvas {
+  touch-action: none;
+}
+
+html,
+body {
+  overscroll-behavior: none;
+}
+
+/* iOS prevents zoom-on-focus when input font-size is >= 16px.
+   Applied only on mobile; overrides Tailwind text-* utilities with !important. */
+@media (max-width: 767px) {
+  input,
+  textarea,
+  select {
+    font-size: 16px !important;
+  }
 }
