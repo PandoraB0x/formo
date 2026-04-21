@@ -21,9 +21,11 @@ import {
   Command,
   Eye,
   HelpCircle,
-  Lock,
-  Lightbulb,
+  Layers,
 } from 'lucide-react';
+import { useLang } from '@/i18n/useLang';
+import LanguageSwitcher from '@/components/LanguageSwitcher';
+import { GUIDE, type StepContent } from './guideContent';
 
 // ── Scroll-reveal wrapper ────────────────────────────────────────────────────
 function Reveal({
@@ -131,51 +133,10 @@ function Shot({
   );
 }
 
-// ── Tip card ─────────────────────────────────────────────────────────────────
-function Tip({
-  children,
-  tone = 'matcha',
-}: {
-  children: React.ReactNode;
-  tone?: 'matcha' | 'sage' | 'sun';
-}) {
-  const palette =
-    tone === 'sage'
-      ? { bg: 'rgba(214,228,193,0.45)', bd: 'rgba(143,181,105,0.35)', tc: '#3a5022' }
-      : tone === 'sun'
-      ? { bg: 'rgba(254,243,199,0.6)', bd: 'rgba(234,179,8,0.3)', tc: '#713f12' }
-      : { bg: 'rgba(168,205,135,0.22)', bd: 'rgba(88,123,62,0.3)', tc: '#2d3d1f' };
-  return (
-    <div
-      className="space-y-1.5 rounded-2xl p-4 text-sm leading-relaxed"
-      style={{ background: palette.bg, border: `1px solid ${palette.bd}`, color: palette.tc }}
-    >
-      {children}
-    </div>
-  );
-}
-
 // ── Step (desktop: 2-col with screenshot) ────────────────────────────────────
-function Step({
-  n,
-  title,
-  desc,
-  img,
-  imgAlt,
-  imgCaption,
-  children,
-  flip = false,
-}: {
-  n: number;
-  title: string;
-  desc: string;
-  img?: string;
-  imgAlt?: string;
-  imgCaption?: string;
-  children?: React.ReactNode;
-  flip?: boolean;
-}) {
-  const hasImg = !!img;
+function Step({ n, step }: { n: number; step: StepContent }) {
+  const hasImg = !!step.img;
+  const flip = step.flip;
   return (
     <div
       className={`flex flex-col gap-5 ${
@@ -192,19 +153,19 @@ function Step({
               {n}
             </div>
             <div>
-              <p className="text-base font-bold text-matcha-900 md:text-lg">{title}</p>
-              <p className="text-sm text-matcha-700/70">{desc}</p>
+              <p className="text-base font-bold text-matcha-900 md:text-lg">{step.title}</p>
+              <p className="text-sm text-matcha-700/70">{step.desc}</p>
             </div>
           </div>
           <div className="space-y-3 text-[15px] leading-relaxed text-matcha-900/85">
-            {children}
+            {step.body}
           </div>
         </div>
       </Reveal>
-      {img && (
+      {step.img && (
         <Reveal delay={n * 40 + 80} from={flip ? 'left' : 'right'}>
           <div className={flip && hasImg ? 'md:order-1' : ''}>
-            <Shot src={img} alt={imgAlt ?? title} caption={imgCaption} />
+            <Shot src={step.img} alt={step.imgAlt ?? step.title} caption={step.imgCaption} />
           </div>
         </Reveal>
       )}
@@ -323,22 +284,6 @@ function Accordion({
   );
 }
 
-// ── Keyboard key ────────────────────────────────────────────────────────────
-function Kbd({ children }: { children: React.ReactNode }) {
-  return (
-    <kbd
-      className="mx-0.5 inline-block rounded-md px-1.5 py-0.5 text-[11px] font-semibold text-matcha-900"
-      style={{
-        background: 'rgba(255,255,255,0.9)',
-        border: '1px solid rgba(143,181,105,0.4)',
-        boxShadow: '0 1px 2px rgba(88,123,62,0.12)',
-      }}
-    >
-      {children}
-    </kbd>
-  );
-}
-
 // ── Divider ─────────────────────────────────────────────────────────────────
 function Divider() {
   return (
@@ -349,21 +294,31 @@ function Divider() {
   );
 }
 
-const TOC = [
-  { id: 'alustamine', label: 'Alustamine', icon: Rocket },
-  { id: 'tahvel', label: 'Tahvel', icon: Grid3X3 },
-  { id: 'sisestamine', label: 'Sisestamine', icon: PenLine },
-  { id: 'murrud-astmed', label: 'Murrud', icon: Divide },
-  { id: 'klaviatuur', label: 'Klaviatuur', icon: KeyboardIcon },
-  { id: 'muutmine', label: 'Muutmine', icon: Edit3 },
-  { id: 'lehed', label: 'Lehed', icon: Files },
-  { id: 'raamatukogu', label: 'Raamatukogu', icon: BookMarked },
-  { id: 'eksport', label: 'Eksport', icon: Download },
-  { id: 'konto', label: 'Konto', icon: User },
-  { id: 'kiirklahvid', label: 'Kiirklahvid', icon: Command },
-];
+// Icon map by TOC id — keeps icons wired even though labels come from GUIDE
+const SECTION_ICONS: Record<string, React.ComponentType<{ size?: number }>> = {
+  alustamine: Rocket,
+  tahvel: Grid3X3,
+  sisestamine: PenLine,
+  'murrud-astmed': Divide,
+  klaviatuur: KeyboardIcon,
+  kohandamine: Layers,
+  muutmine: Edit3,
+  lehed: Files,
+  raamatukogu: BookMarked,
+  eksport: Download,
+  konto: User,
+  kiirklahvid: Command,
+};
 
 export default function AbiClient() {
+  const { lang } = useLang();
+  const c = GUIDE[lang];
+
+  const IconFor = (id: string) => {
+    const Ico = SECTION_ICONS[id] ?? Rocket;
+    return <Ico size={20} />;
+  };
+
   return (
     <div
       className="relative min-h-screen overflow-x-hidden"
@@ -414,9 +369,12 @@ export default function AbiClient() {
           <ArrowLeft size={16} className="text-matcha-600" strokeWidth={2.5} />
           Formo
         </Link>
-        <span className="hidden text-xs uppercase tracking-widest text-matcha-700/60 md:inline">
-          Juhend
-        </span>
+        <div className="flex items-center gap-3">
+          <span className="hidden text-xs uppercase tracking-widest text-matcha-700/60 md:inline">
+            {c.navLabel}
+          </span>
+          <LanguageSwitcher compact />
+        </div>
       </nav>
 
       {/* ── Hero ─────────────────────────────────────────────────────────── */}
@@ -441,7 +399,7 @@ export default function AbiClient() {
               >
                 <Sparkles size={11} className="text-matcha-600" />
               </span>
-              Matemaatika tahvel
+              {c.heroPill}
             </p>
             <h1
               className="mb-5 text-[2.4rem] font-black leading-[1.05] tracking-tight md:text-5xl lg:text-6xl"
@@ -452,11 +410,10 @@ export default function AbiClient() {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              Kuidas Formot kasutada
+              {c.heroTitle}
             </h1>
             <p className="mx-auto mb-8 max-w-sm text-base leading-relaxed text-matcha-800/80 md:mx-0 md:max-w-none md:text-lg">
-              Visuaalne tahvel õpetajatele ja õpilastele. Loo valemeid, murde, astmeid — kõik
-              brauseris, ilma installimata. Ekspordi PNG või PDF formaadis.
+              {c.heroSub}
             </p>
             <div className="mb-8 flex flex-col justify-center gap-3 sm:flex-row md:justify-start">
               <Link
@@ -468,19 +425,19 @@ export default function AbiClient() {
                   className="flex items-center justify-center gap-2 rounded-[10px] px-6 py-3 text-sm font-bold text-white transition-transform group-hover:translate-x-0.5"
                   style={{ background: 'linear-gradient(135deg, #8fb569, #587b3e)' }}
                 >
-                  Alusta kohe <ArrowRight size={15} />
+                  {c.ctaStart} <ArrowRight size={15} />
                 </span>
               </Link>
               <a
                 href="#alustamine"
                 className="flex items-center justify-center gap-2 rounded-xl border border-matcha-300 bg-white/80 px-6 py-3 text-sm font-bold text-matcha-800 backdrop-blur transition hover:border-matcha-500 hover:bg-white"
               >
-                Vaata juhendit <ChevronDown size={15} />
+                {c.ctaView} <ChevronDown size={15} />
               </a>
             </div>
             {/* TOC chips */}
             <div className="flex flex-wrap justify-center gap-2 md:justify-start">
-              {TOC.map(({ id, label, icon: Icon }) => (
+              {c.toc.map(({ id, label, icon: Icon }) => (
                 <a
                   key={id}
                   href={`#${id}`}
@@ -501,8 +458,8 @@ export default function AbiClient() {
             <Reveal from="right" delay={150}>
               <Shot
                 src="/guide/01-landing.png"
-                alt="Formo esileht"
-                caption="Formo esileht — sealt see algab"
+                alt={c.heroTitle}
+                caption={c.heroCaption}
               />
             </Reveal>
           </div>
@@ -512,81 +469,28 @@ export default function AbiClient() {
       {/* ── 1. Alustamine ───────────────────────────────────────────────── */}
       <Divider />
       <Section id="alustamine">
-        <SectionHead
-          icon={<Rocket size={20} />}
-          title="1. Alustamine"
-          sub="Kaks viisi, kuidas Formot avada — kiirelt või kontoga."
-        />
-        <Step
-          n={1}
-          title="Ava esileht"
-          desc="Kaks nuppu — vali, mis sobib."
-          img="/guide/01-landing.png"
-          imgAlt="Formo esileht"
-          imgCaption="Esileht: Alusta kohe või Logi sisse"
-        >
-          <ul className="ml-5 list-disc space-y-2">
-            <li>
-              <strong className="text-matcha-900">Alusta kohe</strong> — avad tahvli
-              külaliserežiimis. Loo, ekspordi, sulge. Midagi ei salvestata.
-            </li>
-            <li>
-              <strong className="text-matcha-900">Logi sisse</strong> — sisesta e-post ja nimi.
-              Seejärel saab tahvleid salvestada ja hiljem avada lehelt{' '}
-              <em>Minu tööd</em>.
-            </li>
-          </ul>
-          <Tip tone="matcha">
-            <div className="flex items-start gap-2">
-              <Lock size={14} className="mt-0.5 shrink-0 text-matcha-700" />
-              <span>
-                Külaliserežiim töötab täiesti kohalikult — ei ühtegi päringut serverile.
-              </span>
-            </div>
-          </Tip>
-        </Step>
+        <SectionHead icon={IconFor('alustamine')} title={c.alustamine.title} sub={c.alustamine.sub} />
+        {c.alustamine.steps?.map((step, i) => (
+          <Step key={i} n={i + 1} step={step} />
+        ))}
       </Section>
 
       {/* ── 2. Tahvel ja ruudustik ──────────────────────────────────────── */}
       <Divider />
       <Section id="tahvel">
-        <SectionHead
-          icon={<Grid3X3 size={20} />}
-          title="2. Tahvel ja ruudustik"
-          sub="Koolivihku imiteeriv 5 × 5 mm ruudustik — mõõda ja joonda täpselt."
-        />
-        <Step
-          n={1}
-          title="Ruudustik nagu päris paberil"
-          desc="Iga ruut = 5 mm. Iga viies joon = 25 mm (tumedam)."
-          img="/guide/02-canvas.png"
-          imgAlt="Tahvli ruudustik"
-          imgCaption="A4 leht 5 mm ruudustikuga"
-          flip
-        >
-          <p>
-            Vaikimisi on leht A4 püsti. Toolbar'ist saab vahetada A3, A5 või kohandatud
-            mõõtudele ning muuta orientatsiooni püsti ↔ rõhtsalt.
-          </p>
-          <Tip tone="sage">
-            <div className="flex items-start gap-2">
-              <Lightbulb size={14} className="mt-0.5 shrink-0 text-matcha-700" />
-              <span>
-                Navigeerimine: hoia <Kbd>Space</Kbd> ja lohista tahvlit; kasuta
-                kerimisratast suurendamiseks või vähendamiseks.
-              </span>
-            </div>
-          </Tip>
-        </Step>
+        <SectionHead icon={IconFor('tahvel')} title={c.tahvel.title} sub={c.tahvel.sub} />
+        {c.tahvel.steps?.map((step, i) => (
+          <Step key={i} n={i + 1} step={step} />
+        ))}
       </Section>
 
       {/* ── 3. Valemite sisestamine ─────────────────────────────────────── */}
       <Divider />
       <Section id="sisestamine">
         <SectionHead
-          icon={<PenLine size={20} />}
-          title="3. Valemite sisestamine"
-          sub="Topeltklõps + kirjuta + Enter. Formo tunneb avaldised ise ära."
+          icon={IconFor('sisestamine')}
+          title={c.sisestamine.head.title}
+          sub={c.sisestamine.head.sub}
         />
         <Reveal>
           <div
@@ -597,35 +501,16 @@ export default function AbiClient() {
               boxShadow: '0 6px 20px rgba(88,123,62,0.08)',
             }}
           >
-            <p className="text-matcha-900/85">
-              Tee topeltklõps tühjale kohale — avaneb sisestuskast. Kirjuta arv, muutuja või
-              avaldis ja vajuta <Kbd>Enter</Kbd>. Formo tunneb automaatselt ära:
-            </p>
+            <p className="text-matcha-900/85">{c.sisestamine.lead}</p>
             <ul className="mt-4 grid grid-cols-1 gap-2 text-[15px] text-matcha-900/85 sm:grid-cols-2">
-              <li className="rounded-xl bg-matcha-50 px-3 py-2">
-                <span className="text-xs uppercase tracking-wide text-matcha-700/70">
-                  Arvud
-                </span>
-                <div className="mt-0.5 font-mono text-sm">5 · 3.14 · −2</div>
-              </li>
-              <li className="rounded-xl bg-matcha-50 px-3 py-2">
-                <span className="text-xs uppercase tracking-wide text-matcha-700/70">
-                  Muutujad
-                </span>
-                <div className="mt-0.5 font-mono text-sm">x · sin · log</div>
-              </li>
-              <li className="rounded-xl bg-matcha-50 px-3 py-2">
-                <span className="text-xs uppercase tracking-wide text-matcha-700/70">
-                  Operaatorid
-                </span>
-                <div className="mt-0.5 font-mono text-sm">+ − · =</div>
-              </li>
-              <li className="rounded-xl bg-matcha-50 px-3 py-2">
-                <span className="text-xs uppercase tracking-wide text-matcha-700/70">
-                  Avaldised
-                </span>
-                <div className="mt-0.5 font-mono text-sm">x+y · 2a−3b</div>
-              </li>
+              {c.sisestamine.cards.map((card) => (
+                <li key={card.label} className="rounded-xl bg-matcha-50 px-3 py-2">
+                  <span className="text-xs uppercase tracking-wide text-matcha-700/70">
+                    {card.label}
+                  </span>
+                  <div className="mt-0.5 font-mono text-sm">{card.examples}</div>
+                </li>
+              ))}
             </ul>
           </div>
         </Reveal>
@@ -634,310 +519,142 @@ export default function AbiClient() {
       {/* ── 4. Murrud, astmed, indeksid ─────────────────────────────────── */}
       <Divider />
       <Section id="murrud-astmed">
-        <SectionHead
-          icon={<Divide size={20} />}
-          title="4. Murrud, astmed ja indeksid"
-          sub="Keeruka vormistuse saad lihtsa lühendiga."
-        />
-
-        <Step
-          n={1}
-          title="Murd"
-          desc="3/4 + Enter → vertikaalne murd."
-          img="/guide/03-fraction.png"
-          imgAlt="Murd 3/4"
-          imgCaption="Lugeja üles, nimetaja alla"
-        >
-          <p>
-            Kirjuta <code className="rounded bg-matcha-100 px-1.5 py-0.5 font-mono">3/4</code>{' '}
-            ja vajuta <Kbd>Enter</Kbd>. Formo tõstab lugeja üles ja nimetaja alla
-            automaatselt.
-          </p>
-        </Step>
-
-        <Step
-          n={2}
-          title="Aste (ruut, kuup jne)"
-          desc="42 + ↑ → 4². Töötab tähtedega ka."
-          img="/guide/04-power.png"
-          imgAlt="Aste 4²"
-          imgCaption="Vajutus üles muudab viimase märgi astendajaks"
-          flip
-        >
-          <p>
-            Kirjuta <code className="rounded bg-matcha-100 px-1.5 py-0.5 font-mono">42</code>{' '}
-            ja vajuta <Kbd>↑</Kbd> — tulemus on 4². Sama töötab tähtedega:{' '}
-            <code className="rounded bg-matcha-100 px-1.5 py-0.5 font-mono">x2</code> +{' '}
-            <Kbd>↑</Kbd> → x².
-          </p>
-        </Step>
-
-        <Step
-          n={3}
-          title="Alaindeks (keemia, matemaatika)"
-          desc="H2 + ↓ → H₂."
-          img="/guide/05-subscript.png"
-          imgAlt="Indeks H₂"
-          imgCaption="Vajutus alla muudab viimase märgi alaindeksiks"
-        >
-          <p>
-            Kirjuta <code className="rounded bg-matcha-100 px-1.5 py-0.5 font-mono">H2</code>{' '}
-            ja vajuta <Kbd>↓</Kbd> — tulemus on H₂. Ideaalne keemia valemite jaoks.
-          </p>
-        </Step>
+        <SectionHead icon={IconFor('murrud-astmed')} title={c.murrud.title} sub={c.murrud.sub} />
+        {c.murrud.steps?.map((step, i) => (
+          <Step key={i} n={i + 1} step={step} />
+        ))}
       </Section>
 
       {/* ── 5. Virtuaalne klaviatuur ────────────────────────────────────── */}
       <Divider />
       <Section id="klaviatuur">
-        <SectionHead
-          icon={<KeyboardIcon size={20} />}
-          title="5. Virtuaalne klaviatuur"
-          sub="Numbrid, operaatorid, funktsioonid — ühe klõpsu kaugusel."
-        />
-        <Step
-          n={1}
-          title="Kasuta paneeli vasakul"
-          desc="Sobib puuteekraanile ja kui ei soovi klaviatuurivahetust."
-          img="/guide/06-keyboard.png"
-          imgAlt="Virtuaalne klaviatuur"
-          imgCaption="Klõpsa nupule — element lisatakse tahvlile"
-        >
-          <p>
-            Ekraani vasakus servas on paneel numbrite, operaatorite, funktsioonide ja
-            erisümbolitega. Klõpsa nupule — element ilmub kohe tahvlile.
-          </p>
-          <Tip tone="matcha">
-            Mugav iPadil ja puuteekraaniga sülearvutitel — ei pea pidevalt
-            klaviatuurilayoute vahetama.
-          </Tip>
-        </Step>
+        <SectionHead icon={IconFor('klaviatuur')} title={c.klaviatuur.title} sub={c.klaviatuur.sub} />
+        {c.klaviatuur.steps?.map((step, i) => (
+          <Step key={i} n={i + 1} step={step} />
+        ))}
       </Section>
 
-      {/* ── 6. Muutmine ─────────────────────────────────────────────────── */}
+      {/* ── 6. Kohandamine ──────────────────────────────────────────────── */}
+      <Divider />
+      <Section id="kohandamine">
+        <SectionHead icon={IconFor('kohandamine')} title={c.kohandamine.title} sub={c.kohandamine.sub} />
+        {c.kohandamine.steps?.map((step, i) => (
+          <Step key={i} n={i + 1} step={step} />
+        ))}
+      </Section>
+
+      {/* ── 7. Muutmine ─────────────────────────────────────────────────── */}
       <Divider />
       <Section id="muutmine">
-        <SectionHead
-          icon={<Edit3 size={20} />}
-          title="6. Elementide muutmine"
-          sub="Värv, suurus, dubleerimine ja kustutamine ühes paneelis."
-        />
-        <Step
-          n={1}
-          title="Kiirpaneel valitud elemendi juures"
-          desc="Klõpsa elementi ja muuda seda kohe."
-          img="/guide/07-popup.png"
-          imgAlt="Redigeerimise paneel"
-          imgCaption="Kiirpaneel ilmub valitud elemendi kõrvale"
-          flip
-        >
-          <ul className="ml-5 list-disc space-y-1">
-            <li>Värvi muutmine (6 esmaselget varianti)</li>
-            <li>Šrifti suurus</li>
-            <li>Kopeeri (dubleeri)</li>
-            <li>
-              Kustuta (või vajuta <Kbd>Delete</Kbd>)
-            </li>
-          </ul>
-          <Tip tone="sage">
-            Mitme elemendi valimiseks hoia <Kbd>Shift</Kbd> ja klõpsa, või tõmba hiirega
-            valimisraam. <Kbd>⌘</Kbd>+<Kbd>A</Kbd> valib kõik lehel olevad elemendid.
-          </Tip>
-        </Step>
+        <SectionHead icon={IconFor('muutmine')} title={c.muutmine.title} sub={c.muutmine.sub} />
+        {c.muutmine.steps?.map((step, i) => (
+          <Step key={i} n={i + 1} step={step} />
+        ))}
       </Section>
 
-      {/* ── 7. Mitu lehte ──────────────────────────────────────────────── */}
+      {/* ── 8. Mitu lehte ──────────────────────────────────────────────── */}
       <Divider />
       <Section id="lehed">
-        <SectionHead
-          icon={<Files size={20} />}
-          title="7. Mitu lehte"
-          sub="Üks tahvel, palju lehti — nagu töövihikul."
-        />
-        <Step
-          n={1}
-          title="Lehtede paneel paremal"
-          desc="Klõpsa + uue lehe lisamiseks, hõlju kaardil dubleerimiseks/kustutamiseks."
-          img="/guide/08-pages.png"
-          imgAlt="Lehtede paneel"
-          imgCaption="Iga leht on eraldi tööpind"
-        >
-          <p>
-            Igal tahvlil võib olla mitu lehte. Eksport töötab nii üksiku lehe kui kõigi
-            lehtede kohta — saad koostada mitmeleheline tööleht ja salvestada kõik ühe
-            PDF-ina.
-          </p>
-        </Step>
+        <SectionHead icon={IconFor('lehed')} title={c.lehed.title} sub={c.lehed.sub} />
+        {c.lehed.steps?.map((step, i) => (
+          <Step key={i} n={i + 1} step={step} />
+        ))}
       </Section>
 
-      {/* ── 8. Raamatukogu ──────────────────────────────────────────────── */}
+      {/* ── 9. Raamatukogu ──────────────────────────────────────────────── */}
       <Divider />
       <Section id="raamatukogu">
         <SectionHead
-          icon={<BookMarked size={20} />}
-          title="8. Valemite raamatukogu"
-          sub="Salvesta tihedalt kasutatavad valemid ja taaskasuta ühe klõpsuga."
+          icon={IconFor('raamatukogu')}
+          title={c.raamatukogu.head.title}
+          sub={c.raamatukogu.head.sub}
         />
         <Reveal>
           <Accordion
             icon={<BookMarked size={16} />}
-            title="Kuidas valemit salvestada ja uuesti kasutada?"
-            desc="Kolm sammu — nimi, kategooria, valmis."
+            title={c.raamatukogu.accordionTitle}
+            desc={c.raamatukogu.accordionDesc}
             defaultOpen
           >
-            <ol className="ml-5 list-decimal space-y-2">
-              <li>Vali element või elementide grupp tahvlil.</li>
-              <li>
-                Klõpsa toolbar'ist <strong>Salvesta valem raamatukokku</strong>{' '}
-                (järjehoidja+ ikoon).
-              </li>
-              <li>
-                Anna nimi ja kategooria (nt <em>Geomeetria</em>, <em>Füüsika</em>).
-              </li>
-            </ol>
-            <p>
-              Hiljem ava raamatukogu (järjehoidja ikoon), otsi nime järgi või filtreeri
-              kategooria järgi ning klõpsa — valem ilmub kohe tahvlile.
-            </p>
+            {c.raamatukogu.body}
           </Accordion>
         </Reveal>
       </Section>
 
-      {/* ── 9. Eksport ──────────────────────────────────────────────────── */}
+      {/* ── 10. Eksport ──────────────────────────────────────────────────── */}
       <Divider />
       <Section id="eksport">
-        <SectionHead
-          icon={<Download size={20} />}
-          title="9. Eksport: PNG ja PDF"
-          sub="Kolm taset: kogu leht, kõik lehed või ainult valitud ala."
-        />
+        <SectionHead icon={IconFor('eksport')} title={c.eksport.head.title} sub={c.eksport.head.sub} />
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
           <Reveal from="left">
-            <Shot
-              src="/guide/09-png-export.png"
-              alt="PNG ekspordi menüü"
-              caption="PNG menüü: Kogu leht või Valitud ala"
-            />
+            <Shot src="/guide/09-png-export.png" alt="PNG" caption={c.eksport.pngCaption} />
           </Reveal>
           <Reveal from="right" delay={80}>
-            <Shot
-              src="/guide/10-pdf-export.png"
-              alt="PDF ekspordi menüü"
-              caption="PDF menüü: See leht, Kõik lehed, Valitud ala"
-            />
+            <Shot src="/guide/10-pdf-export.png" alt="PDF" caption={c.eksport.pdfCaption} />
           </Reveal>
         </div>
         <Reveal delay={120}>
           <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
-            <div
-              className="rounded-2xl p-5"
-              style={{
-                background: 'rgba(255,255,255,0.9)',
-                border: '1px solid rgba(143,181,105,0.28)',
-                boxShadow: '0 4px 14px rgba(88,123,62,0.08)',
-              }}
-            >
-              <p className="text-sm font-bold text-matcha-900">Kogu leht</p>
-              <p className="mt-1 text-sm text-matcha-700/80">
-                Terve tahvli leht pildina või PDF-ina. Kolm tausta: ruudustikuga, valge või
-                läbipaistev.
-              </p>
-            </div>
-            <div
-              className="rounded-2xl p-5"
-              style={{
-                background: 'rgba(255,255,255,0.9)',
-                border: '1px solid rgba(143,181,105,0.28)',
-                boxShadow: '0 4px 14px rgba(88,123,62,0.08)',
-              }}
-            >
-              <p className="text-sm font-bold text-matcha-900">Kõik lehed</p>
-              <p className="mt-1 text-sm text-matcha-700/80">
-                Ainult PDF. Mitmeleheline fail — üks leht = üks lehekülg.
-              </p>
-            </div>
-            <div
-              className="rounded-2xl p-5"
-              style={{
-                background: 'rgba(255,255,255,0.9)',
-                border: '1px solid rgba(143,181,105,0.28)',
-                boxShadow: '0 4px 14px rgba(88,123,62,0.08)',
-              }}
-            >
-              <p className="text-sm font-bold text-matcha-900">Valitud ala</p>
-              <p className="mt-1 text-sm text-matcha-700/80">
-                Ainult valitud elemendid, tihedalt kärbitud. Ideaalne üksiku valemi
-                kopeerimiseks töölehte.
-              </p>
-            </div>
+            {c.eksport.cards.map((card) => (
+              <div
+                key={card.title}
+                className="rounded-2xl p-5"
+                style={{
+                  background: 'rgba(255,255,255,0.9)',
+                  border: '1px solid rgba(143,181,105,0.28)',
+                  boxShadow: '0 4px 14px rgba(88,123,62,0.08)',
+                }}
+              >
+                <p className="text-sm font-bold text-matcha-900">{card.title}</p>
+                <p className="mt-1 text-sm text-matcha-700/80">{card.body}</p>
+              </div>
+            ))}
           </div>
         </Reveal>
-        <Tip tone="sun">
-          <div className="flex items-start gap-2">
-            <Lightbulb size={14} className="mt-0.5 shrink-0" />
-            <span>
-              <strong>Vihje:</strong> läbipaistva taustaga PNG sobib mistahes
-              slaiditaustaga — ei pea muretsema esitluse värvi pärast.
-            </span>
-          </div>
-        </Tip>
+        <div
+          className="space-y-1.5 rounded-2xl p-4 text-sm leading-relaxed"
+          style={{
+            background: 'rgba(254,243,199,0.6)',
+            border: '1px solid rgba(234,179,8,0.3)',
+            color: '#713f12',
+          }}
+        >
+          {c.eksport.tip}
+        </div>
       </Section>
 
-      {/* ── 10. Konto ───────────────────────────────────────────────────── */}
+      {/* ── 11. Konto ───────────────────────────────────────────────────── */}
       <Divider />
       <Section id="konto">
-        <SectionHead
-          icon={<User size={20} />}
-          title="10. Konto ja salvestamine"
-          sub="Logi sisse e-postiga, et tahvlid püsivalt alles jääksid."
-        />
+        <SectionHead icon={IconFor('konto')} title={c.konto.head.title} sub={c.konto.head.sub} />
         <div className="grid grid-cols-1 gap-5 md:grid-cols-2 md:gap-6">
           <Reveal from="left">
-            <Shot
-              src="/guide/11-login.png"
-              alt="Sisselogimise vorm"
-              caption="Sisselogimine: e-post + nimi"
-            />
+            <Shot src="/guide/11-login.png" alt="Login" caption={c.konto.loginCaption} />
           </Reveal>
           <Reveal from="right" delay={80}>
-            <Shot
-              src="/guide/12-works.png"
-              alt="Minu tööd"
-              caption="Minu tööd — salvestatud tahvlite galerii"
-            />
+            <Shot src="/guide/12-works.png" alt="My works" caption={c.konto.worksCaption} />
           </Reveal>
         </div>
-        <Reveal>
-          <ul className="ml-5 list-disc space-y-1 text-matcha-900/85">
-            <li>
-              <strong className="text-matcha-900">Salvesta</strong> — salvestab praeguse
-              tahvli koos kõigi lehtedega.
-            </li>
-            <li>
-              <strong className="text-matcha-900">Ava tahvel</strong> — kuvab salvestatud
-              tahvlite loendi.
-            </li>
-            <li>
-              <strong className="text-matcha-900">Minu tööd</strong> — kõigi tahvlite
-              galerii eelvaadetega.
-            </li>
-          </ul>
-        </Reveal>
-        <Tip tone="sage">
-          <strong>Märkus:</strong> praegu salvestatakse tahvlid sinu brauserisse
-          (localStorage). Kui vahetad arvutit või puhastad brauseri andmed, lähevad need
-          kaduma. Impordi/ekspordi JSON funktsiooni abil saad tahvli ühest brauserist
-          teise viia.
-        </Tip>
+        <Reveal>{c.konto.bullets}</Reveal>
+        <div
+          className="space-y-1.5 rounded-2xl p-4 text-sm leading-relaxed"
+          style={{
+            background: 'rgba(214,228,193,0.45)',
+            border: '1px solid rgba(143,181,105,0.35)',
+            color: '#3a5022',
+          }}
+        >
+          {c.konto.note}
+        </div>
       </Section>
 
-      {/* ── 11. Kiirklahvid ─────────────────────────────────────────────── */}
+      {/* ── 12. Kiirklahvid ─────────────────────────────────────────────── */}
       <Divider />
       <Section id="kiirklahvid">
         <SectionHead
-          icon={<Command size={20} />}
-          title="11. Kiirklahvid"
-          sub="Kõik kombinatsioonid ühes kohas."
+          icon={IconFor('kiirklahvid')}
+          title={c.kiirklahvid.head.title}
+          sub={c.kiirklahvid.head.sub}
         />
         <Reveal>
           <div
@@ -951,89 +668,20 @@ export default function AbiClient() {
             <table className="w-full text-sm">
               <thead
                 className="text-left text-xs uppercase tracking-wide"
-                style={{
-                  background: 'rgba(214,228,193,0.45)',
-                  color: '#3a5022',
-                }}
+                style={{ background: 'rgba(214,228,193,0.45)', color: '#3a5022' }}
               >
                 <tr>
-                  <th className="px-4 py-3">Klahv</th>
-                  <th className="px-4 py-3">Tegevus</th>
+                  <th className="px-4 py-3">{c.kiirklahvid.colKey}</th>
+                  <th className="px-4 py-3">{c.kiirklahvid.colAction}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-matcha-100 text-matcha-900/85">
-                <tr>
-                  <td className="px-4 py-2.5">
-                    <Kbd>Enter</Kbd>
-                  </td>
-                  <td className="px-4 py-2.5">Lisa sisestatud valem</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2.5">
-                    <Kbd>↑</Kbd> pärast numbrit/tähte
-                  </td>
-                  <td className="px-4 py-2.5">Tee astmeks (4² , x²)</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2.5">
-                    <Kbd>↓</Kbd> pärast numbrit/tähte
-                  </td>
-                  <td className="px-4 py-2.5">Tee alaindeksiks (H₂)</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2.5">
-                    <Kbd>⌘</Kbd>/<Kbd>Ctrl</Kbd> + <Kbd>A</Kbd>
-                  </td>
-                  <td className="px-4 py-2.5">Vali kõik</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2.5">
-                    <Kbd>⌘</Kbd>/<Kbd>Ctrl</Kbd> + <Kbd>C</Kbd>
-                  </td>
-                  <td className="px-4 py-2.5">Kopeeri valitud</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2.5">
-                    <Kbd>⌘</Kbd>/<Kbd>Ctrl</Kbd> + <Kbd>V</Kbd>
-                  </td>
-                  <td className="px-4 py-2.5">Kleebi</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2.5">
-                    <Kbd>⌘</Kbd>/<Kbd>Ctrl</Kbd> + <Kbd>D</Kbd>
-                  </td>
-                  <td className="px-4 py-2.5">Dubleeri valitud</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2.5">
-                    <Kbd>⌘</Kbd>/<Kbd>Ctrl</Kbd> + <Kbd>Z</Kbd>
-                  </td>
-                  <td className="px-4 py-2.5">Võta tagasi</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2.5">
-                    <Kbd>⌘</Kbd>/<Kbd>Ctrl</Kbd> + <Kbd>Shift</Kbd> + <Kbd>Z</Kbd>
-                  </td>
-                  <td className="px-4 py-2.5">Tee uuesti</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2.5">
-                    <Kbd>Delete</Kbd> / <Kbd>Backspace</Kbd>
-                  </td>
-                  <td className="px-4 py-2.5">Kustuta valitud</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2.5">
-                    <Kbd>Esc</Kbd>
-                  </td>
-                  <td className="px-4 py-2.5">Tühista valik</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-2.5">
-                    <Kbd>Space</Kbd> + hiir
-                  </td>
-                  <td className="px-4 py-2.5">Liiguta tahvlit</td>
-                </tr>
+                {c.kiirklahvid.rows.map((row, i) => (
+                  <tr key={i}>
+                    <td className="px-4 py-2.5">{row.keys}</td>
+                    <td className="px-4 py-2.5">{row.action}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -1068,10 +716,10 @@ export default function AbiClient() {
                   WebkitTextFillColor: 'transparent',
                 }}
               >
-                Valmis proovima?
+                {c.ctaTitle}
               </h2>
               <p className="relative mt-3 text-sm text-matcha-800/80 md:text-base">
-                Ava tahvel ja alusta — ei mingit seadistamist.
+                {c.ctaSub}
               </p>
               <div className="relative mt-6 flex flex-wrap justify-center gap-3">
                 <Link
@@ -1083,14 +731,14 @@ export default function AbiClient() {
                     className="flex items-center justify-center gap-2 rounded-[10px] px-6 py-3 text-sm font-bold text-white"
                     style={{ background: 'linear-gradient(135deg, #8fb569, #587b3e)' }}
                   >
-                    Ava tahvel <ArrowRight size={15} />
+                    {c.ctaOpen} <ArrowRight size={15} />
                   </span>
                 </Link>
                 <Link
                   href="/"
                   className="flex items-center justify-center gap-2 rounded-xl border border-matcha-300 bg-white/80 px-6 py-3 text-sm font-bold text-matcha-800 backdrop-blur transition hover:border-matcha-500 hover:bg-white"
                 >
-                  Esilehele
+                  {c.ctaHome}
                 </Link>
               </div>
             </div>
@@ -1101,7 +749,7 @@ export default function AbiClient() {
       <footer className="relative z-10 mx-auto max-w-5xl px-5 pb-10 text-center text-xs text-matcha-700/50">
         <span className="inline-flex items-center gap-1.5">
           <HelpCircle size={10} />
-          Formo — matemaatika tahvel eesti õpetajatele
+          {c.footer}
         </span>
       </footer>
     </div>

@@ -148,6 +148,19 @@ export interface Dict {
     guestDockTitle: string;
     clearTooltip: string;
     resultsCount: (n: number) => string;
+    reorderStart: string;
+    reorderDone: string;
+    reorderHint: string;
+    kitsTitle: string;
+    kitAll: string;
+    kitCreate: string;
+    kitEdit: string;
+    kitEditHint: string;
+    kitRename: string;
+    kitDelete: string;
+    kitNamePrompt: string;
+    kitRenamePrompt: string;
+    kitDeleteConfirm: (name: string) => string;
     groups: Record<string, string>;
   };
   popup: {
@@ -506,6 +519,19 @@ const et: Dict = {
     guestDockTitle: 'Logi sisse, et dokk salvestuks',
     clearTooltip: 'Tühjenda',
     resultsCount: (n) => `Tulemused (${n})`,
+    reorderStart: 'Muuda järjekorda',
+    reorderDone: 'Valmis',
+    reorderHint: 'Lohista kategooriat, et muuta järjekorda',
+    kitsTitle: 'Komplektid',
+    kitAll: 'Kõik kategooriad',
+    kitCreate: 'Uus komplekt',
+    kitEdit: 'Muuda koosseisu',
+    kitEditHint: 'Vajuta kategooriale, et lisada või eemaldada komplektist',
+    kitRename: 'Nimeta ümber',
+    kitDelete: 'Kustuta',
+    kitNamePrompt: 'Komplekti nimi (nt „5. klass")',
+    kitRenamePrompt: 'Uus nimi',
+    kitDeleteConfirm: (name) => `Kas kustutada komplekt „${name}"?`,
     groups: {
       Numbrid: 'Numbrid',
       Tehted: 'Tehted',
@@ -894,6 +920,19 @@ const en: Dict = {
     guestDockTitle: 'Log in so the dock is saved for you',
     clearTooltip: 'Clear',
     resultsCount: (n) => `Results (${n})`,
+    reorderStart: 'Reorder',
+    reorderDone: 'Done',
+    reorderHint: 'Drag a category to reorder',
+    kitsTitle: 'Sets',
+    kitAll: 'All categories',
+    kitCreate: 'New set',
+    kitEdit: 'Edit contents',
+    kitEditHint: 'Tap a category to add or remove it from the set',
+    kitRename: 'Rename',
+    kitDelete: 'Delete',
+    kitNamePrompt: 'Set name (e.g. "Grade 5")',
+    kitRenamePrompt: 'New name',
+    kitDeleteConfirm: (name) => `Delete set "${name}"?`,
     groups: {
       Numbrid: 'Numbers',
       Tehted: 'Operations',
@@ -1297,6 +1336,19 @@ const ru: Dict = {
     guestDockTitle: 'Войди, чтобы док сохранился',
     clearTooltip: 'Очистить',
     resultsCount: (n) => `Результаты (${n})`,
+    reorderStart: 'Изменить порядок',
+    reorderDone: 'Готово',
+    reorderHint: 'Перетащи категорию, чтобы изменить порядок',
+    kitsTitle: 'Комплекты',
+    kitAll: 'Все категории',
+    kitCreate: 'Новый комплект',
+    kitEdit: 'Изменить состав',
+    kitEditHint: 'Жми на категорию, чтобы добавить или убрать из комплекта',
+    kitRename: 'Переименовать',
+    kitDelete: 'Удалить',
+    kitNamePrompt: 'Название комплекта (напр. «5 класс»)',
+    kitRenamePrompt: 'Новое название',
+    kitDeleteConfirm: (name) => `Удалить комплект «${name}»?`,
     groups: {
       Numbrid: 'Цифры',
       Tehted: 'Операции',
