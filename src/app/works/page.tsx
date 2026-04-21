@@ -7,12 +7,18 @@ import { ArrowLeft, Plus, Sparkles, Trash2, LogOut, Search, FileText } from 'luc
 import { listSavedBoards, loadSavedBoard, deleteSavedBoard } from '@/lib/storage';
 import { useAuth, logout } from '@/lib/auth';
 import { useBoardStore } from '@/store/useBoardStore';
+import { useLang } from '@/i18n/useLang';
+import type { Dict } from '@/i18n/dict';
+import type { Lang } from '@/i18n/types';
 
 type Entry = ReturnType<typeof listSavedBoards>[number];
+
+const LOCALE_MAP: Record<Lang, string> = { et: 'et-EE', en: 'en-US', ru: 'ru-RU' };
 
 export default function WorksPage() {
   const router = useRouter();
   const { user, ready } = useAuth();
+  const { lang, t } = useLang();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [query, setQuery] = useState('');
 
@@ -40,7 +46,7 @@ export default function WorksPage() {
   }
 
   function handleDelete(id: string) {
-    if (!confirm('Kustuta tahvel?')) return;
+    if (!confirm(t.works.confirmDelete)) return;
     deleteSavedBoard(id);
     setEntries(listSavedBoards());
   }
@@ -53,7 +59,7 @@ export default function WorksPage() {
   if (!ready || !user) {
     return (
       <div className="flex min-h-screen items-center justify-center text-sm text-neutral-400">
-        Laadimine…
+        {t.works.loading}
       </div>
     );
   }
@@ -65,7 +71,7 @@ export default function WorksPage() {
           <Link
             href="/"
             className="flex items-center gap-2 text-matcha-900"
-            aria-label="Tagasi avalehele"
+            aria-label={t.works.backToHome}
           >
             <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-matcha-500 text-white">
               <Sparkles size={16} strokeWidth={2.4} />
@@ -82,7 +88,7 @@ export default function WorksPage() {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Otsi tahvlit…"
+              placeholder={t.works.search}
               className="w-full max-w-md rounded-full border border-neutral-200 bg-neutral-50 py-1.5 pl-9 pr-3 text-sm outline-none focus:border-matcha-400 focus:bg-white"
             />
           </div>
@@ -95,7 +101,7 @@ export default function WorksPage() {
               className="flex items-center gap-1 rounded-full border border-neutral-200 bg-white px-3 py-1.5 text-sm text-neutral-600 transition hover:border-matcha-300 hover:text-matcha-900"
             >
               <LogOut size={14} />
-              <span className="hidden sm:inline">Logi välja</span>
+              <span className="hidden sm:inline">{t.nav.logout}</span>
             </button>
           </div>
         </div>
@@ -109,15 +115,13 @@ export default function WorksPage() {
               className="mb-2 inline-flex items-center gap-1 text-xs text-neutral-500 hover:text-matcha-700"
             >
               <ArrowLeft size={12} />
-              Avalehele
+              {t.works.backHome}
             </Link>
             <h1 className="text-2xl font-bold text-matcha-900 md:text-3xl">
-              Minu tööd
+              {t.works.myWorks}
             </h1>
             <p className="mt-1 text-sm text-neutral-600">
-              {entries.length === 0
-                ? 'Sul pole veel ühtegi salvestatud tahvlit.'
-                : `${entries.length} salvestatud tahvlit`}
+              {entries.length === 0 ? t.works.empty : t.works.savedCount(entries.length)}
             </p>
           </div>
 
@@ -127,12 +131,12 @@ export default function WorksPage() {
             className="flex items-center gap-2 rounded-full bg-matcha-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-matcha-700"
           >
             <Plus size={16} />
-            Uus tahvel
+            {t.works.newBoard}
           </button>
         </div>
 
         {filtered.length === 0 ? (
-          <EmptyState onNew={handleNew} hasFilter={!!query.trim()} />
+          <EmptyState onNew={handleNew} hasFilter={!!query.trim()} t={t} />
         ) : (
           <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {filtered.map((entry) => (
@@ -141,6 +145,8 @@ export default function WorksPage() {
                 entry={entry}
                 onOpen={() => handleOpen(entry.id)}
                 onDelete={() => handleDelete(entry.id)}
+                t={t}
+                lang={lang}
               />
             ))}
           </ul>
@@ -154,10 +160,14 @@ function WorkCard({
   entry,
   onOpen,
   onDelete,
+  t,
+  lang,
 }: {
   entry: Entry;
   onOpen: () => void;
   onDelete: () => void;
+  t: Dict;
+  lang: Lang;
 }) {
   return (
     <li className="group relative overflow-hidden rounded-2xl border border-neutral-200 bg-white shadow-sm transition hover:border-matcha-300 hover:shadow-md">
@@ -165,7 +175,7 @@ function WorkCard({
         type="button"
         onClick={onOpen}
         className="block w-full text-left"
-        title={`Ava: ${entry.name}`}
+        title={`${t.works.open} ${entry.name}`}
       >
         <div className="relative aspect-[4/3] w-full bg-gradient-to-br from-matcha-50 to-neutral-100">
           {entry.thumbnail ? (
@@ -187,7 +197,7 @@ function WorkCard({
               {entry.name}
             </p>
             <p className="mt-0.5 text-[11px] text-neutral-500">
-              {formatDate(entry.updatedAt)}
+              {formatDate(entry.updatedAt, lang)}
             </p>
           </div>
         </div>
@@ -198,7 +208,7 @@ function WorkCard({
           e.stopPropagation();
           onDelete();
         }}
-        title="Kustuta"
+        title={t.works.delete}
         className="absolute right-2 top-2 hidden rounded-lg bg-white/90 p-1.5 text-red-600 shadow ring-1 ring-neutral-200 transition group-hover:block hover:bg-white"
       >
         <Trash2 size={14} />
@@ -207,11 +217,11 @@ function WorkCard({
   );
 }
 
-function EmptyState({ onNew, hasFilter }: { onNew: () => void; hasFilter: boolean }) {
+function EmptyState({ onNew, hasFilter, t }: { onNew: () => void; hasFilter: boolean; t: Dict }) {
   if (hasFilter) {
     return (
       <div className="rounded-2xl border border-dashed border-neutral-300 bg-white/50 py-14 text-center">
-        <p className="text-sm text-neutral-500">Midagi ei leitud.</p>
+        <p className="text-sm text-neutral-500">{t.works.notFound}</p>
       </div>
     );
   }
@@ -220,28 +230,24 @@ function EmptyState({ onNew, hasFilter }: { onNew: () => void; hasFilter: boolea
       <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-matcha-100 text-matcha-700">
         <FileText size={24} />
       </div>
-      <p className="text-base font-semibold text-matcha-900">
-        Veel ühtegi tahvlit pole
-      </p>
-      <p className="mt-1 text-sm text-neutral-500">
-        Alusta uut tahvlit ja salvesta see siia.
-      </p>
+      <p className="text-base font-semibold text-matcha-900">{t.works.emptyTitle}</p>
+      <p className="mt-1 text-sm text-neutral-500">{t.works.emptyHint}</p>
       <button
         type="button"
         onClick={onNew}
         className="mt-5 inline-flex items-center gap-2 rounded-full bg-matcha-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-matcha-700"
       >
         <Plus size={14} />
-        Loo esimene
+        {t.works.emptyCta}
       </button>
     </div>
   );
 }
 
-function formatDate(iso: string): string {
+function formatDate(iso: string, lang: Lang): string {
   try {
     const d = new Date(iso);
-    return d.toLocaleDateString('et-EE', {
+    return d.toLocaleDateString(LOCALE_MAP[lang], {
       day: 'numeric',
       month: 'short',
       year: 'numeric',

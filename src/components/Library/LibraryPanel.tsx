@@ -5,6 +5,7 @@ import { Search, Trash2, X } from 'lucide-react';
 import type Konva from 'konva';
 import { useBoardStore } from '@/store/useBoardStore';
 import { listSnippets, deleteSnippet } from '@/lib/snippetStorage';
+import { useLang } from '@/i18n/useLang';
 import type { Snippet } from '@/types/snippet';
 
 interface Props {
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export default function LibraryPanel({ open, onClose, stageRef }: Props) {
+  const { t } = useLang();
   const insertSnippet = useBoardStore((s) => s.insertSnippet);
   const [snippets, setSnippets] = useState<Snippet[]>([]);
   const [query, setQuery] = useState('');
@@ -25,9 +27,9 @@ export default function LibraryPanel({ open, onClose, stageRef }: Props) {
 
   const categories = useMemo(() => {
     const set = new Set<string>();
-    snippets.forEach((s) => set.add(s.category || 'Üldine'));
+    snippets.forEach((s) => set.add(s.category || t.snippetDialog.defaultCategory));
     return Array.from(set).sort();
-  }, [snippets]);
+  }, [snippets, t.snippetDialog.defaultCategory]);
 
   const filtered = useMemo(() => {
     return snippets.filter((s) => {
@@ -52,7 +54,7 @@ export default function LibraryPanel({ open, onClose, stageRef }: Props) {
   }
 
   function handleDelete(id: string) {
-    if (!confirm('Kustuta valem raamatukogust?')) return;
+    if (!confirm(t.library.confirmDelete)) return;
     deleteSnippet(id);
     setSnippets(listSnippets());
   }
@@ -69,12 +71,12 @@ export default function LibraryPanel({ open, onClose, stageRef }: Props) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between border-b border-neutral-200 px-5 py-3">
-          <h2 className="text-lg font-semibold">Valemite raamatukogu</h2>
+          <h2 className="text-lg font-semibold">{t.library.title}</h2>
           <button
             type="button"
             onClick={onClose}
             className="rounded p-1 text-neutral-500 hover:bg-neutral-100"
-            aria-label="Sulge"
+            aria-label={t.library.close}
           >
             <X size={18} />
           </button>
@@ -90,13 +92,13 @@ export default function LibraryPanel({ open, onClose, stageRef }: Props) {
               type="text"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Otsi valemit..."
+              placeholder={t.library.search}
               className="w-full rounded border border-neutral-200 bg-neutral-50 py-1.5 pl-8 pr-3 text-sm outline-none focus:border-matcha-400 focus:bg-white"
             />
           </div>
           <div className="flex gap-1 overflow-x-auto">
             <CatPill
-              label="Kõik"
+              label={t.library.all}
               active={activeCategory === null}
               onClick={() => setActiveCategory(null)}
             />
@@ -114,9 +116,7 @@ export default function LibraryPanel({ open, onClose, stageRef }: Props) {
         <div className="flex-1 overflow-y-auto p-4">
           {filtered.length === 0 ? (
             <p className="py-10 text-center text-sm text-neutral-500">
-              {snippets.length === 0
-                ? 'Raamatukogu on tühi. Vali elemendid ja salvesta valem.'
-                : 'Midagi ei leitud.'}
+              {snippets.length === 0 ? t.library.empty : t.library.notFound}
             </p>
           ) : (
             <ul className="grid grid-cols-3 gap-3">
@@ -124,6 +124,9 @@ export default function LibraryPanel({ open, onClose, stageRef }: Props) {
                 <SnippetCard
                   key={s.id}
                   snippet={s}
+                  insertLabel={t.library.insert}
+                  deleteLabel={t.library.delete}
+                  elementsLabel={t.library.elementsCount}
                   onInsert={() => handleInsert(s)}
                   onDelete={() => handleDelete(s.id)}
                 />
@@ -162,10 +165,16 @@ function CatPill({
 
 function SnippetCard({
   snippet,
+  insertLabel,
+  deleteLabel,
+  elementsLabel,
   onInsert,
   onDelete,
 }: {
   snippet: Snippet;
+  insertLabel: string;
+  deleteLabel: string;
+  elementsLabel: (n: number) => string;
   onInsert: () => void;
   onDelete: () => void;
 }) {
@@ -176,7 +185,7 @@ function SnippetCard({
         type="button"
         onClick={onInsert}
         className="block w-full bg-white"
-        title="Lisa lõuendile"
+        title={insertLabel}
       >
         <div
           className="relative w-full bg-neutral-50"
@@ -191,7 +200,7 @@ function SnippetCard({
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center text-xs text-neutral-400">
-              {snippet.elements.length} elementi
+              {elementsLabel(snippet.elements.length)}
             </div>
           )}
         </div>
@@ -208,7 +217,7 @@ function SnippetCard({
           e.stopPropagation();
           onDelete();
         }}
-        title="Kustuta"
+        title={deleteLabel}
         className="absolute right-1 top-1 hidden rounded bg-white/90 p-1 text-red-600 shadow ring-1 ring-neutral-200 group-hover:block hover:bg-white"
       >
         <Trash2 size={12} />

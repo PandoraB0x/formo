@@ -8,10 +8,12 @@ import { useBoardStore } from '@/store/useBoardStore';
 import { addRecentKey } from '@/lib/recentKeys';
 import { getKeyboardPrefs, saveKeyboardPrefs } from '@/lib/keyboardPrefs';
 import { emit, on } from '@/lib/events';
+import { useLang } from '@/i18n/useLang';
 import SymbolButton from './SymbolButton';
 
 export default function SymbolBar() {
   const addElement = useBoardStore((s) => s.addElement);
+  const { t } = useLang();
   const [openKey, setOpenKey] = useState<string | null>(null);
   const [query, setQuery] = useState('');
   const [pinned, setPinned] = useState<string[]>([]);
@@ -90,10 +92,10 @@ export default function SymbolBar() {
               ? 'border-matcha-500 bg-matcha-50 text-matcha-800'
               : 'border-neutral-200 bg-white text-neutral-600 hover:border-neutral-400'
           }`}
-          title="Otsi sümbolit"
+          title={t.keyboard.searchTitle}
         >
           <Search size={12} />
-          Otsi
+          {t.keyboard.searchShort}
         </button>
         <div className="h-5 w-px shrink-0 bg-neutral-200" />
         {KEYBOARD_GROUPS.map((g) => {
@@ -108,10 +110,10 @@ export default function SymbolBar() {
                   ? 'border-matcha-500 bg-matcha-50 text-matcha-800'
                   : 'border-neutral-200 bg-white text-neutral-600 hover:border-neutral-400'
               }`}
-              title={g.title}
+              title={t.keyboard.groups[g.title] ?? g.title}
             >
               <span className="text-base leading-none text-matcha-700">{g.short}</span>
-              <span className="hidden md:inline">{g.title}</span>
+              <span className="hidden md:inline">{t.keyboard.groups[g.title] ?? g.title}</span>
             </button>
           );
         })}
@@ -130,7 +132,7 @@ export default function SymbolBar() {
                 autoFocus
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Otsi sümbolit (sin, alfa, →)"
+                placeholder={t.keyboard.searchPlaceholder}
                 className="w-full rounded-md border border-neutral-200 bg-neutral-50 py-2 pl-8 pr-8 text-sm text-neutral-800 placeholder:text-neutral-400 focus:border-matcha-400 focus:outline-none focus:ring-1 focus:ring-matcha-200"
               />
               {query && (
@@ -138,20 +140,20 @@ export default function SymbolBar() {
                   type="button"
                   onClick={() => setQuery('')}
                   className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded p-0.5 text-neutral-400 hover:bg-neutral-100 hover:text-neutral-700"
-                  title="Tühjenda"
+                  title={t.keyboard.clearTooltip}
                 >
                   <X size={13} />
                 </button>
               )}
             </div>
             {!q ? (
-              <p className="text-xs text-neutral-500">Alusta tippimist. Näiteks: sin, alfa, →, kuup.</p>
+              <p className="text-xs text-neutral-500">{t.keyboard.searchHint}</p>
             ) : searchResults.length === 0 ? (
-              <p className="text-xs text-neutral-500">Midagi ei leitud</p>
+              <p className="text-xs text-neutral-500">{t.keyboard.notFound}</p>
             ) : (
               <>
                 <p className="mb-2 text-[11px] uppercase tracking-wide text-neutral-400">
-                  Tulemused ({searchResults.length})
+                  {t.keyboard.resultsCount(searchResults.length)}
                 </p>
                 <div className="grid grid-cols-10 gap-1.5">
                   {searchResults.map((k) => (
@@ -175,10 +177,10 @@ export default function SymbolBar() {
           <div className="mx-auto max-w-4xl p-3">
             <div className="mb-2 flex items-center justify-between">
               <p className="text-[11px] font-medium uppercase tracking-wide text-neutral-400">
-                {activeGroup.title}
+                {t.keyboard.groups[activeGroup.title] ?? activeGroup.title}
               </p>
               <p className="text-[10px] text-neutral-400">
-                Parem klõps — kinnita vasakusse doki. Lohista — sama.
+                {t.keyboard.hintPin}
               </p>
             </div>
             <div className="grid grid-cols-10 gap-1.5">

@@ -1,7 +1,7 @@
 'use client';
 
 import type { Board } from '@/types/element';
-import { migrateBoard } from '@/store/useBoardStore';
+import { migrateBoard } from '@/lib/migrations';
 
 const KEY = 'formo:boards:v1';
 
@@ -55,7 +55,7 @@ export function deleteSavedBoard(id: string): void {
 
 export function loadSavedBoard(id: string): Board | null {
   const entry = readAll().find((e) => e.id === id);
-  return entry ? entry.board : null;
+  return entry ? migrateBoard(entry.board) : null;
 }
 
 export function downloadJson(board: Board): void {

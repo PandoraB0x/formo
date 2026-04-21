@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { X } from 'lucide-react';
 import { listCategories } from '@/lib/snippetStorage';
+import { useLang } from '@/i18n/useLang';
 
 interface Props {
   open: boolean;
@@ -12,17 +13,18 @@ interface Props {
 }
 
 export default function SaveSnippetDialog({ open, defaultName, onCancel, onSave }: Props) {
+  const { t } = useLang();
   const [name, setName] = useState('');
-  const [category, setCategory] = useState('Üldine');
+  const [category, setCategory] = useState(t.snippetDialog.defaultCategory);
   const [existing, setExisting] = useState<string[]>([]);
 
   useEffect(() => {
     if (open) {
       setName(defaultName ?? '');
-      setCategory('Üldine');
+      setCategory(t.snippetDialog.defaultCategory);
       setExisting(listCategories());
     }
-  }, [open, defaultName]);
+  }, [open, defaultName, t.snippetDialog.defaultCategory]);
 
   if (!open) return null;
 
@@ -36,7 +38,7 @@ export default function SaveSnippetDialog({ open, defaultName, onCancel, onSave 
         onClick={(e) => e.stopPropagation()}
       >
         <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-base font-semibold">Salvesta valem</h3>
+          <h3 className="text-base font-semibold">{t.snippetDialog.title}</h3>
           <button
             type="button"
             onClick={onCancel}
@@ -47,7 +49,7 @@ export default function SaveSnippetDialog({ open, defaultName, onCancel, onSave 
         </div>
 
         <label className="mb-2 block text-xs font-medium text-neutral-600">
-          Nimi
+          {t.snippetDialog.name}
           <input
             autoFocus
             type="text"
@@ -57,19 +59,19 @@ export default function SaveSnippetDialog({ open, defaultName, onCancel, onSave 
               if (e.key === 'Enter' && name.trim()) onSave(name, category);
               if (e.key === 'Escape') onCancel();
             }}
-            placeholder="nt Ruudu pindala"
+            placeholder={t.snippetDialog.namePh}
             className="mt-1 w-full rounded border border-neutral-300 px-3 py-1.5 text-sm outline-none focus:border-matcha-400"
           />
         </label>
 
         <label className="mb-4 block text-xs font-medium text-neutral-600">
-          Kategooria
+          {t.snippetDialog.category}
           <input
             type="text"
             value={category}
             onChange={(e) => setCategory(e.target.value)}
             list="snippet-categories"
-            placeholder="nt Geomeetria"
+            placeholder={t.snippetDialog.categoryPh}
             className="mt-1 w-full rounded border border-neutral-300 px-3 py-1.5 text-sm outline-none focus:border-matcha-400"
           />
           <datalist id="snippet-categories">
@@ -85,7 +87,7 @@ export default function SaveSnippetDialog({ open, defaultName, onCancel, onSave 
             onClick={onCancel}
             className="rounded px-3 py-1.5 text-sm text-neutral-600 hover:bg-neutral-100"
           >
-            Tühista
+            {t.snippetDialog.cancel}
           </button>
           <button
             type="button"
@@ -93,7 +95,7 @@ export default function SaveSnippetDialog({ open, defaultName, onCancel, onSave 
             disabled={!name.trim()}
             className="rounded bg-matcha-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-matcha-700 disabled:opacity-40"
           >
-            Salvesta
+            {t.snippetDialog.save}
           </button>
         </div>
       </div>

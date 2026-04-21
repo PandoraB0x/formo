@@ -2,9 +2,11 @@
 
 import { Plus, Copy, Trash2 } from 'lucide-react';
 import { useBoardStore } from '@/store/useBoardStore';
+import { useLang } from '@/i18n/useLang';
 import type { Page } from '@/types/element';
 
 export default function PagesPanel() {
+  const { t } = useLang();
   const pages = useBoardStore((s) => s.board.pages);
   const activePageId = useBoardStore((s) => s.board.activePageId);
   const addPage = useBoardStore((s) => s.addPage);
@@ -15,7 +17,7 @@ export default function PagesPanel() {
   return (
     <aside className="flex h-full w-40 flex-col border-l border-neutral-200 bg-neutral-50">
       <div className="flex items-center justify-between px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-neutral-500">
-        <span>Lehed</span>
+        <span>{t.pages.pages}</span>
         <span className="tabular-nums text-neutral-400">{pages.length}</span>
       </div>
 
@@ -28,6 +30,7 @@ export default function PagesPanel() {
               index={idx}
               active={page.id === activePageId}
               canDelete={pages.length > 1}
+              labels={t.pages}
               onSelect={() => setActivePage(page.id)}
               onDuplicate={() => duplicatePage(page.id)}
               onDelete={() => deletePage(page.id)}
@@ -42,7 +45,7 @@ export default function PagesPanel() {
         className="m-2 flex items-center justify-center gap-1 rounded-lg border border-dashed border-neutral-300 bg-white py-2 text-xs font-medium text-neutral-600 transition hover:border-neutral-500 hover:text-neutral-900"
       >
         <Plus size={14} />
-        Lisa leht
+        {t.pages.addPage}
       </button>
     </aside>
   );
@@ -53,6 +56,7 @@ function PageCard({
   index,
   active,
   canDelete,
+  labels,
   onSelect,
   onDuplicate,
   onDelete,
@@ -61,6 +65,14 @@ function PageCard({
   index: number;
   active: boolean;
   canDelete: boolean;
+  labels: {
+    pages: string;
+    addPage: string;
+    duplicatePage: string;
+    deletePage: string;
+    emptyPage: string;
+    page: string;
+  };
   onSelect: () => void;
   onDuplicate: () => void;
   onDelete: () => void;
@@ -81,17 +93,17 @@ function PageCard({
           {page.thumbnail ? (
             <img
               src={page.thumbnail}
-              alt={`Leht ${index + 1}`}
+              alt={`${labels.page} ${index + 1}`}
               className="absolute inset-0 h-full w-full object-contain"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center text-[10px] text-neutral-300">
-              Tühi leht
+              {labels.emptyPage}
             </div>
           )}
         </div>
         <div className="flex items-center justify-between border-t border-neutral-200 bg-white px-2 py-1 text-[10px] font-medium text-neutral-600">
-          <span>Leht {index + 1}</span>
+          <span>{labels.page} {index + 1}</span>
           <span className="uppercase text-neutral-400">{page.canvas.pageSize}</span>
         </div>
       </button>
@@ -103,7 +115,7 @@ function PageCard({
             e.stopPropagation();
             onDuplicate();
           }}
-          title="Dubleeri leht"
+          title={labels.duplicatePage}
           className="flex h-6 w-6 items-center justify-center rounded bg-white/90 text-neutral-700 shadow ring-1 ring-neutral-200 hover:bg-white"
         >
           <Copy size={12} />
@@ -115,7 +127,7 @@ function PageCard({
               e.stopPropagation();
               onDelete();
             }}
-            title="Kustuta leht"
+            title={labels.deletePage}
             className="flex h-6 w-6 items-center justify-center rounded bg-white/90 text-red-600 shadow ring-1 ring-neutral-200 hover:bg-white"
           >
             <Trash2 size={12} />

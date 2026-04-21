@@ -43,6 +43,7 @@ import { saveSnippet } from '@/lib/snippetStorage';
 import LibraryPanel from '@/components/Library/LibraryPanel';
 import SaveSnippetDialog from '@/components/Library/SaveSnippetDialog';
 import { useAuth } from '@/lib/auth';
+import { useLang } from '@/i18n/useLang';
 import Link from 'next/link';
 import { FONT_OPTIONS } from '@/lib/constants';
 import {
@@ -57,6 +58,7 @@ interface Props {
 }
 
 export default function Toolbar({ stageRef }: Props) {
+  const { t } = useLang();
   const board = useBoardStore((s) => s.board);
   const activePage = useBoardStore(
     (s) => s.board.pages.find((p) => p.id === s.board.activePageId) ?? s.board.pages[0],
@@ -145,9 +147,9 @@ export default function Toolbar({ stageRef }: Props) {
         waitForRender,
       );
       downloadPdf(pdf, `${board.name.replace(/\s+/g, '_')}.pdf`);
-      showFlash('PDF valmis');
+      showFlash(t.toolbar.pdfReady);
     } catch {
-      showFlash('PDF viga');
+      showFlash(t.toolbar.pdfError);
     } finally {
       setPdfBusy(false);
       setPdfMenuOpen(false);
@@ -170,7 +172,7 @@ export default function Toolbar({ stageRef }: Props) {
       }
     }
     saveBoard(board, thumb);
-    showFlash('Salvestatud');
+    showFlash(t.toolbar.saved);
   }
 
   function openBoardsList() {
@@ -183,12 +185,12 @@ export default function Toolbar({ stageRef }: Props) {
     if (loaded) {
       loadBoard(loaded);
       setShowBoards(false);
-      showFlash(`Avatud: ${loaded.name}`);
+      showFlash(`${t.toolbar.opened} ${loaded.name}`);
     }
   }
 
   function handleDelete(id: string) {
-    if (!confirm('Kustuta tahvel?')) return;
+    if (!confirm(t.toolbar.confirmDelete)) return;
     deleteSavedBoard(id);
     setSavedList(listSavedBoards());
   }
@@ -220,7 +222,7 @@ export default function Toolbar({ stageRef }: Props) {
     if (!stage) return;
     const bbox = getSelectionBBox();
     if (!bbox) {
-      showFlash('Vali elemendid');
+      showFlash(t.toolbar.selectFirst);
       return;
     }
     const pad = 8;
@@ -236,7 +238,7 @@ export default function Toolbar({ stageRef }: Props) {
     if (!stage) return;
     const bbox = getSelectionBBox();
     if (!bbox) {
-      showFlash('Vali elemendid');
+      showFlash(t.toolbar.selectFirst);
       return;
     }
     const pdf = exportSelectionToPdf(stage, bbox, { background: bg });
@@ -250,9 +252,9 @@ export default function Toolbar({ stageRef }: Props) {
     try {
       const url = exportStageToPng(stage, { background: 'white', pixelRatio: 2 });
       await copyPngToClipboard(url);
-      showFlash('Kopeeritud');
+      showFlash(t.toolbar.copied);
     } catch {
-      showFlash('Lõikelaud pole saadaval');
+      showFlash(t.toolbar.clipboardUnavail);
     }
   }
 
@@ -311,12 +313,12 @@ export default function Toolbar({ stageRef }: Props) {
     const thumbnail = captureSelectionThumbnail();
     const snippet = buildSnippetFromSelection(name, category);
     if (!snippet) {
-      showFlash('Vali elemendid');
+      showFlash(t.toolbar.selectFirst);
       setSaveDialogOpen(false);
       return;
     }
     saveSnippet({ ...snippet, thumbnail });
-    showFlash(`Salvestatud: ${snippet.name}`);
+    showFlash(`${t.toolbar.savedAs} ${snippet.name}`);
     setSaveDialogOpen(false);
   }
 
@@ -327,9 +329,9 @@ export default function Toolbar({ stageRef }: Props) {
     try {
       const imported = await importBoardFromFile(file);
       loadBoard(imported);
-      showFlash(`Imporditud: ${imported.name}`);
+      showFlash(`${t.toolbar.imported} ${imported.name}`);
     } catch {
-      showFlash('Vigane JSON fail');
+      showFlash(t.toolbar.invalidJson);
     }
   }
 
@@ -347,7 +349,7 @@ export default function Toolbar({ stageRef }: Props) {
           autoFocus
           defaultValue={board.name}
           onBlur={(e) => {
-            renameBoard(e.target.value.trim() || 'Nimeta');
+            renameBoard(e.target.value.trim() || t.toolbar.unnamed);
             setEditingName(false);
           }}
           onKeyDown={(e) => {
@@ -369,51 +371,51 @@ export default function Toolbar({ stageRef }: Props) {
 
       <div className="mx-2 h-5 w-px bg-neutral-200" />
 
-      <ToolButton onClick={undo} disabled={pastLen === 0} label="Võta tagasi (⌘Z)">
+      <ToolButton onClick={undo} disabled={pastLen === 0} label={t.toolbar.undo}>
         <Undo2 size={16} />
       </ToolButton>
-      <ToolButton onClick={redo} disabled={futureLen === 0} label="Tee uuesti (⌘⇧Z)">
+      <ToolButton onClick={redo} disabled={futureLen === 0} label={t.toolbar.redo}>
         <Redo2 size={16} />
       </ToolButton>
 
       <div className="mx-2 h-5 w-px bg-neutral-200" />
 
-      <ToolButton onClick={duplicateSelected} disabled={!hasSelection} label="Dubleeri (⌘D)">
+      <ToolButton onClick={duplicateSelected} disabled={!hasSelection} label={t.toolbar.duplicate}>
         <Copy size={16} />
       </ToolButton>
       <ToolButton
         onClick={deleteSelected}
         disabled={!hasSelection}
-        label="Kustuta (Del)"
+        label={t.toolbar.deleteSel}
       >
         <Trash2 size={16} />
       </ToolButton>
 
       <div className="mx-2 h-5 w-px bg-neutral-200" />
 
-      <ToolButton onClick={resetBoard} label="Uus tahvel">
+      <ToolButton onClick={resetBoard} label={t.toolbar.newBoard}>
         <FilePlus size={16} />
       </ToolButton>
       {isGuest ? (
         <Link
           href="/login"
           className="flex items-center gap-1 rounded-md border border-matcha-200 bg-matcha-50 px-2 py-1 text-xs font-medium text-matcha-800 transition hover:border-matcha-400 hover:bg-matcha-100"
-          title="Logi sisse, et tahvleid salvestada"
+          title={t.toolbar.loginSave}
         >
           <Save size={14} />
-          Logi sisse salvestama
+          {t.toolbar.loginSaveBtn}
         </Link>
       ) : (
         <>
-          <ToolButton onClick={handleSave} label="Salvesta (⌘S)">
+          <ToolButton onClick={handleSave} label={t.toolbar.save}>
             <Save size={16} />
           </ToolButton>
-          <ToolButton onClick={openBoardsList} label="Ava tahvel">
+          <ToolButton onClick={openBoardsList} label={t.toolbar.openBoard}>
             <FolderOpen size={16} />
           </ToolButton>
           <Link
             href="/works"
-            title="Minu tööd"
+            title={t.toolbar.myWorks}
             className="flex items-center rounded-md px-2 py-1 text-neutral-700 transition hover:bg-neutral-100"
           >
             <FolderHeart size={16} />
@@ -426,18 +428,18 @@ export default function Toolbar({ stageRef }: Props) {
       <ToolButton
         onClick={handleOpenSaveSnippet}
         disabled={!hasSelection}
-        label="Salvesta valem raamatukokku"
+        label={t.toolbar.saveToLib}
       >
         <BookmarkPlus size={16} />
       </ToolButton>
-      <ToolButton onClick={() => setLibraryOpen(true)} label="Valemite raamatukogu">
+      <ToolButton onClick={() => setLibraryOpen(true)} label={t.toolbar.library}>
         <BookMarked size={16} />
       </ToolButton>
 
       <div className="mx-2 h-5 w-px bg-neutral-200" />
 
       <label className="flex items-center gap-1 rounded px-2 py-1 text-xs text-neutral-600">
-        Leht:
+        {t.toolbar.page}
         <select
           value={activePage.canvas.pageSize}
           onChange={(e) => setPageSize(e.target.value as PageSize)}
@@ -463,19 +465,19 @@ export default function Toolbar({ stageRef }: Props) {
       </label>
 
       <label className="flex items-center gap-1 rounded px-2 py-1 text-xs text-neutral-600">
-        Taust:
+        {t.toolbar.bg}
         <select
           value={activePage.canvas.background}
           onChange={(e) => setBackground(e.target.value as 'transparent' | 'white')}
           className="rounded border border-neutral-200 bg-white px-1 py-0.5 text-xs"
         >
-          <option value="transparent">Läbipaistev</option>
-          <option value="white">Valge</option>
+          <option value="transparent">{t.toolbar.bgTransparent}</option>
+          <option value="white">{t.toolbar.bgWhite}</option>
         </select>
       </label>
 
       <label className="flex items-center gap-1 rounded px-2 py-1 text-xs text-neutral-600">
-        Font:
+        {t.toolbar.font}
         <select
           value={board.fontFamily ?? 'math'}
           onChange={(e) => setFontFamily(e.target.value)}
@@ -490,14 +492,14 @@ export default function Toolbar({ stageRef }: Props) {
       </label>
 
       <div className="ml-auto flex items-center gap-2">
-        <ToolButton onClick={handleCopy} label="Kopeeri PNG">
+        <ToolButton onClick={handleCopy} label={t.toolbar.copyPng}>
           <ClipboardCopy size={16} />
         </ToolButton>
         <div ref={exportMenuRef} className="relative">
           <button
             type="button"
             onClick={() => setExportMenuOpen((v) => !v)}
-            title="Lae alla PNG"
+            title={t.toolbar.pngMenu}
             className="flex items-center rounded-md px-2 py-1 text-neutral-700 transition hover:bg-neutral-100"
           >
             <Download size={16} />
@@ -506,7 +508,7 @@ export default function Toolbar({ stageRef }: Props) {
           {exportMenuOpen && (
             <div className="absolute right-0 top-full z-30 mt-1 w-56 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-xl">
               <div className="border-b border-neutral-100 bg-neutral-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-                Kogu leht
+                {t.toolbar.fullPage}
               </div>
               <button
                 type="button"
@@ -522,7 +524,7 @@ export default function Toolbar({ stageRef }: Props) {
                     backgroundSize: '4px 4px',
                   }}
                 />
-                Ruudustikuga
+                {t.toolbar.gridBg}
               </button>
               <button
                 type="button"
@@ -533,7 +535,7 @@ export default function Toolbar({ stageRef }: Props) {
                   aria-hidden
                   className="h-4 w-4 rounded-sm border border-neutral-200 bg-white"
                 />
-                Valge taust
+                {t.toolbar.whiteBg}
               </button>
               <button
                 type="button"
@@ -550,10 +552,10 @@ export default function Toolbar({ stageRef }: Props) {
                     backgroundPosition: '0 0, 0 3px, 3px -3px, -3px 0',
                   }}
                 />
-                Läbipaistev
+                {t.toolbar.transparentBg}
               </button>
               <div className="border-y border-neutral-100 bg-neutral-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-                Valitud ala {hasSelection ? `(${selectedIds.length})` : ''}
+                {t.toolbar.selectionArea} {hasSelection ? `(${selectedIds.length})` : ''}
               </div>
               <button
                 type="button"
@@ -561,7 +563,7 @@ export default function Toolbar({ stageRef }: Props) {
                 onClick={() => handleExportSelectionPng('white')}
                 className="block w-full px-3 py-2 text-left text-xs hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Valge taust
+                {t.toolbar.whiteBg}
               </button>
               <button
                 type="button"
@@ -569,7 +571,7 @@ export default function Toolbar({ stageRef }: Props) {
                 onClick={() => handleExportSelectionPng('transparent')}
                 className="block w-full px-3 py-2 text-left text-xs hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Läbipaistev
+                {t.toolbar.transparentBg}
               </button>
             </div>
           )}
@@ -579,7 +581,7 @@ export default function Toolbar({ stageRef }: Props) {
             type="button"
             onClick={() => setPdfMenuOpen((v) => !v)}
             disabled={pdfBusy}
-            title="Lae alla PDF"
+            title={t.toolbar.pdfMenu}
             className="flex items-center rounded-md px-2 py-1 text-neutral-700 transition hover:bg-neutral-100 disabled:opacity-40"
           >
             <Download size={16} />
@@ -588,41 +590,41 @@ export default function Toolbar({ stageRef }: Props) {
           {pdfMenuOpen && (
             <div className="absolute right-0 top-full z-30 mt-1 w-56 overflow-hidden rounded-lg border border-neutral-200 bg-white shadow-xl">
               <div className="border-b border-neutral-100 bg-neutral-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-                See leht
+                {t.toolbar.thisPage}
               </div>
               <button
                 type="button"
                 onClick={() => handleExportPdfCurrent('white')}
                 className="block w-full px-3 py-2 text-left text-xs hover:bg-neutral-50"
               >
-                Valge taustaga
+                {t.toolbar.whiteBgPdf}
               </button>
               <button
                 type="button"
                 onClick={() => handleExportPdfCurrent('transparent')}
                 className="block w-full px-3 py-2 text-left text-xs hover:bg-neutral-50"
               >
-                Läbipaistev
+                {t.toolbar.transparentBg}
               </button>
               <div className="border-y border-neutral-100 bg-neutral-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-                Kõik lehed ({board.pages.length})
+                {t.toolbar.allPages} ({board.pages.length})
               </div>
               <button
                 type="button"
                 onClick={() => handleExportPdfAll('white')}
                 className="block w-full px-3 py-2 text-left text-xs hover:bg-neutral-50"
               >
-                Valge taustaga
+                {t.toolbar.whiteBgPdf}
               </button>
               <button
                 type="button"
                 onClick={() => handleExportPdfAll('transparent')}
                 className="block w-full px-3 py-2 text-left text-xs hover:bg-neutral-50"
               >
-                Läbipaistev
+                {t.toolbar.transparentBg}
               </button>
               <div className="border-y border-neutral-100 bg-neutral-50 px-3 py-1 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
-                Valitud ala {hasSelection ? `(${selectedIds.length})` : ''}
+                {t.toolbar.selectionArea} {hasSelection ? `(${selectedIds.length})` : ''}
               </div>
               <button
                 type="button"
@@ -630,7 +632,7 @@ export default function Toolbar({ stageRef }: Props) {
                 onClick={() => handleExportSelectionPdf('white')}
                 className="block w-full px-3 py-2 text-left text-xs hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Valge taustaga
+                {t.toolbar.whiteBgPdf}
               </button>
               <button
                 type="button"
@@ -638,15 +640,15 @@ export default function Toolbar({ stageRef }: Props) {
                 onClick={() => handleExportSelectionPdf('transparent')}
                 className="block w-full px-3 py-2 text-left text-xs hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
               >
-                Läbipaistev
+                {t.toolbar.transparentBg}
               </button>
             </div>
           )}
         </div>
-        <ToolButton onClick={handleExportJson} label="Ekspordi JSON">
+        <ToolButton onClick={handleExportJson} label={t.toolbar.exportJson}>
           <span className="text-xs">JSON</span>
         </ToolButton>
-        <ToolButton onClick={handleImportJsonClick} label="Impordi JSON">
+        <ToolButton onClick={handleImportJsonClick} label={t.toolbar.importJson}>
           <Upload size={16} />
         </ToolButton>
         <input
@@ -680,9 +682,9 @@ export default function Toolbar({ stageRef }: Props) {
             className="max-h-[80vh] w-[640px] overflow-y-auto rounded-xl bg-white p-5 shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            <h2 className="mb-3 text-lg font-semibold">Salvestatud tahvlid</h2>
+            <h2 className="mb-3 text-lg font-semibold">{t.toolbar.savedBoards}</h2>
             {savedList.length === 0 ? (
-              <p className="text-sm text-neutral-500">Midagi pole veel salvestatud.</p>
+              <p className="text-sm text-neutral-500">{t.toolbar.nothingSaved}</p>
             ) : (
               <ul className="grid grid-cols-2 gap-3">
                 {savedList.map((entry) => (
@@ -702,7 +704,7 @@ export default function Toolbar({ stageRef }: Props) {
                           className="max-h-full max-w-full object-contain"
                         />
                       ) : (
-                        <span className="text-xs text-neutral-400">eelvaadet pole</span>
+                        <span className="text-xs text-neutral-400">{t.toolbar.noPreview}</span>
                       )}
                     </div>
                     <div className="flex items-center justify-between border-t border-neutral-100 p-2 text-xs">

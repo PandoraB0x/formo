@@ -8,6 +8,7 @@ import { useBoardStore } from '@/store/useBoardStore';
 import ElementRenderer from './ElementRenderer';
 import SelectionPopup from './SelectionPopup';
 import InlineInput from './InlineInput';
+import { useLang } from '@/i18n/useLang';
 import type { BoardElement } from '@/types/element';
 
 interface CanvasProps {
@@ -45,6 +46,7 @@ const MAX_SCALE = 4;
 const ZOOM_STEP = 1.1;
 
 export default function Canvas({ stageRef }: CanvasProps) {
+  const { t } = useLang();
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [size, setSize] = useState({ width: 0, height: 0 });
   const [stageReady, setStageReady] = useState(false);
@@ -498,7 +500,7 @@ export default function Canvas({ stageRef }: CanvasProps) {
       {elements.length === 0 && !inlineAt && (
         <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <div className="rounded-xl border border-dashed border-neutral-300 bg-white/80 px-6 py-4 text-center text-sm text-neutral-500 shadow-sm">
-            Klõpsa vasakul sümbolil või tee topeltklõps tahvlil — siia ilmub element.
+            {t.canvas.emptyHint}
           </div>
         </div>
       )}
@@ -517,13 +519,14 @@ function ViewControls({
   onZoomOut: () => void;
   onFit: () => void;
 }) {
+  const { t } = useLang();
   return (
     <div className="pointer-events-auto absolute bottom-4 right-4 z-20 flex items-center gap-1 rounded-lg border border-neutral-200 bg-white/95 p-1 text-xs shadow-lg backdrop-blur">
       <button
         type="button"
         onClick={onZoomOut}
         className="rounded px-2 py-1 text-neutral-700 hover:bg-neutral-100"
-        title="Vähenda"
+        title={t.canvas.zoomOut}
       >
         −
       </button>
@@ -531,7 +534,7 @@ function ViewControls({
         type="button"
         onClick={onFit}
         className="min-w-[48px] rounded px-2 py-1 text-center font-mono text-neutral-700 hover:bg-neutral-100"
-        title="Mahuta lehele"
+        title={t.canvas.zoomFit}
       >
         {Math.round(scale * 100)}%
       </button>
@@ -539,7 +542,7 @@ function ViewControls({
         type="button"
         onClick={onZoomIn}
         className="rounded px-2 py-1 text-neutral-700 hover:bg-neutral-100"
-        title="Suurenda"
+        title={t.canvas.zoomIn}
       >
         +
       </button>
@@ -548,6 +551,7 @@ function ViewControls({
 }
 
 function MultiSelectionPopup({ count }: { count: number }) {
+  const { t } = useLang();
   const selectedIds = useBoardStore((s) => s.selectedIds);
   const duplicateSelected = useBoardStore((s) => s.duplicateSelected);
   const deleteSelected = useBoardStore((s) => s.deleteSelected);
@@ -556,20 +560,20 @@ function MultiSelectionPopup({ count }: { count: number }) {
   return (
     <div className="pointer-events-auto absolute left-1/2 top-4 z-20 -translate-x-1/2 rounded-xl border border-matcha-200 bg-white/95 p-2 text-xs shadow-xl backdrop-blur">
       <div className="flex items-center gap-2">
-        <span className="font-medium text-matcha-600">{count} valitud</span>
+        <span className="font-medium text-matcha-600">{t.canvas.selectedCount(count)}</span>
         <button
           type="button"
           onClick={() => duplicateSelected()}
           className="rounded px-2 py-1 text-neutral-700 hover:bg-neutral-100"
         >
-          Dubleeri
+          {t.canvas.duplicate}
         </button>
         <button
           type="button"
           onClick={() => deleteSelected()}
           className="rounded px-2 py-1 text-red-600 hover:bg-red-50"
         >
-          Kustuta
+          {t.canvas.delete}
         </button>
         <span className="ml-1 flex items-center gap-1">
           {['#111111', '#ef4444', '#f59e0b', '#10b981', '#3b82f6', '#8b5cf6'].map((c) => (

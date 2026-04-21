@@ -10,11 +10,13 @@ import { addRecentKey, getRecentKeys, clearRecentKeys } from '@/lib/recentKeys';
 import { getKeyboardPrefs, saveKeyboardPrefs } from '@/lib/keyboardPrefs';
 import { useAuth } from '@/lib/auth';
 import { emit, on } from '@/lib/events';
+import { useLang } from '@/i18n/useLang';
 import SymbolButton from './SymbolButton';
 
 export default function SymbolDock() {
   const addElement = useBoardStore((s) => s.addElement);
   const { user, ready } = useAuth();
+  const { t } = useLang();
   const loggedIn = ready && !!user;
   const [pinnedIds, setPinnedIds] = useState<string[]>([]);
   const [recent, setRecent] = useState<KeyboardKey[]>([]);
@@ -103,13 +105,11 @@ export default function SymbolDock() {
         <section className="mb-4">
           <h3 className="mb-2 flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-neutral-400">
             <Pin size={12} />
-            Kinnitatud
+            {t.keyboard.pinned}
           </h3>
           {pinned.length === 0 ? (
             <div className="rounded-md border border-dashed border-neutral-300 bg-white px-2 py-6 text-center text-xs leading-snug text-neutral-400">
-              Lohista siia
-              <br />
-              sümbol ülevalt
+              {t.keyboard.dragHere}
             </div>
           ) : (
             <div className="grid grid-cols-2 gap-2">
@@ -133,7 +133,7 @@ export default function SymbolDock() {
             <div className="mb-2 flex items-center justify-between">
               <h3 className="flex items-center gap-1.5 text-xs font-medium uppercase tracking-wide text-neutral-400">
                 <Clock size={12} />
-                Hiljuti
+                {t.keyboard.recent}
               </h3>
               <button
                 type="button"
@@ -142,9 +142,9 @@ export default function SymbolDock() {
                   setRecent([]);
                 }}
                 className="text-[11px] text-neutral-400 hover:text-neutral-700"
-                title="Tühjenda"
+                title={t.keyboard.clearTooltip}
               >
-                tühjenda
+                {t.keyboard.clearShort}
               </button>
             </div>
             <div className="grid grid-cols-2 gap-2">
@@ -167,10 +167,10 @@ export default function SymbolDock() {
         <Link
           href="/login"
           className="flex items-center gap-2 border-t border-neutral-200 bg-amber-50/70 px-3 py-3 text-xs leading-snug text-amber-800 hover:bg-amber-50"
-          title="Logi sisse, et dokk salvestuks"
+          title={t.keyboard.guestDockTitle}
         >
           <LogIn size={14} className="shrink-0" />
-          <span>Logi sisse — dokk salvestub sulle.</span>
+          <span>{t.keyboard.guestDockCta}</span>
         </Link>
       )}
     </aside>

@@ -5,6 +5,7 @@ import { Plus, Minus, RotateCw, RotateCcw, Trash2, Copy } from 'lucide-react';
 import type Konva from 'konva';
 import { useBoardStore, selectPrimaryId } from '@/store/useBoardStore';
 import { COLOR_SWATCHES, SIZE_STEPS, currentSizeIndex, snapRotation } from '@/lib/constants';
+import { useLang } from '@/i18n/useLang';
 import type { BoardElement } from '@/types/element';
 
 interface Props {
@@ -14,6 +15,7 @@ interface Props {
 }
 
 export default function SelectionPopup({ stage, hidden, viewKey }: Props) {
+  const { t } = useLang();
   const element = useBoardStore((s) => {
     const id = selectPrimaryId(s);
     if (!id) return null;
@@ -70,6 +72,7 @@ export default function SelectionPopup({ stage, hidden, viewKey }: Props) {
     <ElementControls
       element={element}
       pos={pos}
+      labels={t.popup}
       onSizeChange={(delta) => resizeStep(element.id, delta)}
       onRotate={(delta) => rotateStep(element.id, delta)}
       onColor={(c) => setColor(element.id, c)}
@@ -82,6 +85,7 @@ export default function SelectionPopup({ stage, hidden, viewKey }: Props) {
 function ElementControls({
   element,
   pos,
+  labels,
   onSizeChange,
   onRotate,
   onColor,
@@ -90,6 +94,7 @@ function ElementControls({
 }: {
   element: BoardElement;
   pos: { left: number; top: number; below: boolean };
+  labels: { smaller: string; larger: string; duplicate: string; delete: string };
   onSizeChange: (delta: -1 | 1) => void;
   onRotate: (delta: -1 | 1) => void;
   onColor: (c: string) => void;
@@ -110,7 +115,7 @@ function ElementControls({
       onMouseDown={(e) => e.stopPropagation()}
     >
       <div className="flex items-center gap-0.5">
-        <PopBtn onClick={() => onSizeChange(-1)} disabled={sizeIdx === 0} title="Väiksemaks">
+        <PopBtn onClick={() => onSizeChange(-1)} disabled={sizeIdx === 0} title={labels.smaller}>
           <Minus size={14} />
         </PopBtn>
         <span className="min-w-9 text-center text-[10px] font-medium tabular-nums text-neutral-500">
@@ -119,7 +124,7 @@ function ElementControls({
         <PopBtn
           onClick={() => onSizeChange(1)}
           disabled={sizeIdx === SIZE_STEPS.length - 1}
-          title="Suuremaks"
+          title={labels.larger}
         >
           <Plus size={14} />
         </PopBtn>
@@ -138,10 +143,10 @@ function ElementControls({
 
         <Divider />
 
-        <PopBtn onClick={onDuplicate} title="Dubleeri">
+        <PopBtn onClick={onDuplicate} title={labels.duplicate}>
           <Copy size={14} />
         </PopBtn>
-        <PopBtn onClick={onDelete} title="Kustuta">
+        <PopBtn onClick={onDelete} title={labels.delete}>
           <Trash2 size={14} />
         </PopBtn>
       </div>

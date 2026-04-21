@@ -32,14 +32,12 @@ interface BoardState {
   future: Board[];
 
   addElement: (type: ElementType, content: ElementContent, viewport?: { x: number; y: number }) => void;
-  updateElement: (id: string, patch: Partial<BoardElement>) => void;
   deleteElement: (id: string) => void;
   deleteSelected: () => void;
   duplicateSelected: () => void;
   selectElement: (id: string | null) => void;
   setSelection: (ids: string[]) => void;
   toggleInSelection: (id: string) => void;
-  setElementContent: (id: string, content: ElementContent) => void;
   resizeStep: (id: string, delta: -1 | 1) => void;
   rotateStep: (id: string, delta: -1 | 1) => void;
   setColor: (id: string, color: string) => void;
@@ -100,12 +98,6 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       board: withActiveElements(state.board, [...els, el]),
       selectedIds: [el.id],
     });
-  },
-
-  updateElement: (id, patch) => {
-    const state = get();
-    const els = activeElements(state).map((e) => (e.id === id ? { ...e, ...patch } : e));
-    set({ ...pushHistory(state), board: withActiveElements(state.board, els) });
   },
 
   deleteElement: (id) => {
@@ -234,12 +226,6 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       p.id === state.board.activePageId ? { ...p, elements: els } : p,
     );
     set({ board: { ...state.board, pages } });
-  },
-
-  setElementContent: (id, content) => {
-    const state = get();
-    const els = activeElements(state).map((e) => (e.id === id ? { ...e, content } : e));
-    set({ ...pushHistory(state), board: withActiveElements(state.board, els) });
   },
 
   loadBoard: (board) =>

@@ -137,6 +137,17 @@ export interface Dict {
     expand: string;
     hintTip: string;
     favHint: string;
+    pinned: string;
+    dragHere: string;
+    hintPin: string;
+    searchShort: string;
+    searchTitle: string;
+    searchPlaceholder: string;
+    searchHint: string;
+    guestDockCta: string;
+    guestDockTitle: string;
+    clearTooltip: string;
+    resultsCount: (n: number) => string;
     groups: Record<string, string>;
   };
   popup: {
@@ -144,6 +155,15 @@ export interface Dict {
     larger: string;
     duplicate: string;
     delete: string;
+  };
+  canvas: {
+    emptyHint: string;
+    zoomOut: string;
+    zoomFit: string;
+    zoomIn: string;
+    duplicate: string;
+    delete: string;
+    selectedCount: (n: number) => string;
   };
   guide: {
     metaTitle: string;
@@ -460,6 +480,17 @@ const et: Dict = {
     hintTip:
       'Topeltklõps tühjal kohal — arv või tekst. Parem klõps sümbolil — lemmik. Lohista pealkirja — järjesta.',
     favHint: '(parem klõps — lemmik)',
+    pinned: 'Kinnitatud',
+    dragHere: 'Lohista siia sümbol ülevalt',
+    hintPin: 'Parem klõps — kinnita vasakusse doki. Lohista — sama.',
+    searchShort: 'Otsi',
+    searchTitle: 'Otsi sümbolit',
+    searchPlaceholder: 'Otsi sümbolit (sin, alfa, →)',
+    searchHint: 'Alusta tippimist. Näiteks: sin, alfa, →, kuup.',
+    guestDockCta: 'Logi sisse — dokk salvestub sulle.',
+    guestDockTitle: 'Logi sisse, et dokk salvestuks',
+    clearTooltip: 'Tühjenda',
+    resultsCount: (n) => `Tulemused (${n})`,
     groups: {
       Numbrid: 'Numbrid',
       Tehted: 'Tehted',
@@ -476,6 +507,9 @@ const et: Dict = {
       Nooled: 'Nooled',
       Geomeetria: 'Geomeetria',
       Struktuurid: 'Struktuurid',
+      'Kujundid 2D': 'Kujundid 2D',
+      'Kujundid 2D punktiir': 'Kujundid 2D punktiir',
+      'Kujundid 3D': 'Kujundid 3D',
     },
   },
   popup: {
@@ -483,6 +517,15 @@ const et: Dict = {
     larger: 'Suuremaks',
     duplicate: 'Dubleeri',
     delete: 'Kustuta',
+  },
+  canvas: {
+    emptyHint: 'Klõpsa vasakul sümbolil või tee topeltklõps tahvlil — siia ilmub element.',
+    zoomOut: 'Vähenda',
+    zoomFit: 'Mahuta lehele',
+    zoomIn: 'Suurenda',
+    duplicate: 'Dubleeri',
+    delete: 'Kustuta',
+    selectedCount: (n) => `${n} valitud`,
   },
   guide: {
     metaTitle: 'Juhend — Formo',
@@ -810,6 +853,17 @@ const en: Dict = {
     hintTip:
       'Double-click empty space — number or text. Right-click a symbol — favorite. Drag a title — reorder.',
     favHint: '(right-click — favorite)',
+    pinned: 'Pinned',
+    dragHere: 'Drag a symbol here from above',
+    hintPin: 'Right-click — pin to left dock. Drag — same.',
+    searchShort: 'Search',
+    searchTitle: 'Search symbol',
+    searchPlaceholder: 'Search symbol (sin, alpha, →)',
+    searchHint: 'Start typing. For example: sin, alpha, →, cube.',
+    guestDockCta: 'Log in — your dock will persist.',
+    guestDockTitle: 'Log in so the dock is saved for you',
+    clearTooltip: 'Clear',
+    resultsCount: (n) => `Results (${n})`,
     groups: {
       Numbrid: 'Numbers',
       Tehted: 'Operations',
@@ -826,6 +880,9 @@ const en: Dict = {
       Nooled: 'Arrows',
       Geomeetria: 'Geometry',
       Struktuurid: 'Structures',
+      'Kujundid 2D': 'Shapes 2D',
+      'Kujundid 2D punktiir': 'Shapes 2D dashed',
+      'Kujundid 3D': 'Shapes 3D',
     },
   },
   popup: {
@@ -833,6 +890,15 @@ const en: Dict = {
     larger: 'Larger',
     duplicate: 'Duplicate',
     delete: 'Delete',
+  },
+  canvas: {
+    emptyHint: 'Click a symbol on the left or double-click the canvas — your element appears here.',
+    zoomOut: 'Zoom out',
+    zoomFit: 'Fit to page',
+    zoomIn: 'Zoom in',
+    duplicate: 'Duplicate',
+    delete: 'Delete',
+    selectedCount: (n) => `${n} selected`,
   },
   guide: {
     metaTitle: 'Guide — Formo',
@@ -1175,6 +1241,17 @@ const ru: Dict = {
     hintTip:
       'Двойной клик по пустому месту — число или текст. Правый клик по символу — в избранное. Перетаскивай заголовок — меняй порядок.',
     favHint: '(правый клик — в избранное)',
+    pinned: 'Закреплённые',
+    dragHere: 'Перетащи сюда символ сверху',
+    hintPin: 'Правый клик — закрепить в левом доке. Перетащи — так же.',
+    searchShort: 'Поиск',
+    searchTitle: 'Поиск символа',
+    searchPlaceholder: 'Поиск символа (sin, альфа, →)',
+    searchHint: 'Начни печатать. Например: sin, альфа, →, куб.',
+    guestDockCta: 'Войди — док сохранится под тебя.',
+    guestDockTitle: 'Войди, чтобы док сохранился',
+    clearTooltip: 'Очистить',
+    resultsCount: (n) => `Результаты (${n})`,
     groups: {
       Numbrid: 'Цифры',
       Tehted: 'Операции',
@@ -1191,6 +1268,9 @@ const ru: Dict = {
       Nooled: 'Стрелки',
       Geomeetria: 'Геометрия',
       Struktuurid: 'Структуры',
+      'Kujundid 2D': 'Фигуры 2D',
+      'Kujundid 2D punktiir': 'Фигуры 2D пунктир',
+      'Kujundid 3D': 'Фигуры 3D',
     },
   },
   popup: {
@@ -1198,6 +1278,15 @@ const ru: Dict = {
     larger: 'Больше',
     duplicate: 'Дублировать',
     delete: 'Удалить',
+  },
+  canvas: {
+    emptyHint: 'Кликни по символу слева или сделай двойной клик по доске — элемент появится здесь.',
+    zoomOut: 'Уменьшить',
+    zoomFit: 'По размеру листа',
+    zoomIn: 'Увеличить',
+    duplicate: 'Дублировать',
+    delete: 'Удалить',
+    selectedCount: (n) => `${n} выделено`,
   },
   guide: {
     metaTitle: 'Гайд — Formo',
