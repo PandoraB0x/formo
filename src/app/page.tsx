@@ -54,7 +54,7 @@ export default function LandingPage() {
       </div>
 
       <div className="relative z-10 mb-10 text-center md:mb-14">
-        <h1 className="bg-gradient-to-br from-matcha-500 via-matcha-600 to-matcha-800 bg-clip-text text-8xl font-black leading-none tracking-tighter text-transparent md:text-9xl">
+        <h1 className="bg-gradient-to-br from-matcha-500 via-matcha-600 to-matcha-800 bg-clip-text px-2 text-8xl font-black leading-none tracking-tighter text-transparent md:text-9xl">
           Formo
         </h1>
         <div className="mt-3 flex items-center justify-center gap-2">
