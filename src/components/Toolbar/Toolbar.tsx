@@ -18,6 +18,8 @@ import {
   BookmarkPlus,
   FolderHeart,
   Share2,
+  MoreHorizontal,
+  X,
 } from 'lucide-react';
 import { useBoardStore } from '@/store/useBoardStore';
 import {
@@ -97,6 +99,7 @@ export default function Toolbar({ stageRef }: Props) {
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
   const [publishOpen, setPublishOpen] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user, ready } = useAuth();
   const isGuest = ready && !user;
 
@@ -365,10 +368,10 @@ export default function Toolbar({ stageRef }: Props) {
         <button
           type="button"
           onClick={() => setEditingName(true)}
-          className="flex items-center gap-1 rounded px-2 py-1 text-neutral-700 hover:bg-neutral-100"
+          className="flex min-w-0 items-center gap-1 rounded px-2 py-1 text-neutral-700 hover:bg-neutral-100"
         >
-          {board.name}
-          <Pencil size={12} className="text-neutral-400" />
+          <span className="max-w-[10ch] truncate sm:max-w-none">{board.name}</span>
+          <Pencil size={12} className="shrink-0 text-neutral-400" />
         </button>
       )}
 
@@ -381,67 +384,73 @@ export default function Toolbar({ stageRef }: Props) {
         <Redo2 size={16} />
       </ToolButton>
 
-      <div className="mx-2 h-5 w-px bg-neutral-200" />
+      <div className="mx-2 hidden h-5 w-px bg-neutral-200 sm:block" />
 
-      <ToolButton onClick={duplicateSelected} disabled={!hasSelection} label={t.toolbar.duplicate}>
-        <Copy size={16} />
-      </ToolButton>
-      <ToolButton
-        onClick={deleteSelected}
-        disabled={!hasSelection}
-        label={t.toolbar.deleteSel}
-      >
-        <Trash2 size={16} />
-      </ToolButton>
-
-      <div className="mx-2 h-5 w-px bg-neutral-200" />
-
-      <ToolButton onClick={resetBoard} label={t.toolbar.newBoard}>
-        <FilePlus size={16} />
-      </ToolButton>
-      {isGuest ? (
-        <Link
-          href="/login"
-          className="flex items-center gap-1 rounded-md border border-matcha-200 bg-matcha-50 px-2 py-1 text-xs font-medium text-matcha-800 transition hover:border-matcha-400 hover:bg-matcha-100"
-          title={t.toolbar.loginSave}
+      <div className="hidden items-center gap-2 sm:flex">
+        <ToolButton onClick={duplicateSelected} disabled={!hasSelection} label={t.toolbar.duplicate}>
+          <Copy size={16} />
+        </ToolButton>
+        <ToolButton
+          onClick={deleteSelected}
+          disabled={!hasSelection}
+          label={t.toolbar.deleteSel}
         >
-          <Save size={14} />
-          {t.toolbar.loginSaveBtn}
-        </Link>
-      ) : (
-        <>
-          <ToolButton onClick={handleSave} label={t.toolbar.save}>
-            <Save size={16} />
-          </ToolButton>
-          <ToolButton onClick={openBoardsList} label={t.toolbar.openBoard}>
-            <FolderOpen size={16} />
-          </ToolButton>
+          <Trash2 size={16} />
+        </ToolButton>
+      </div>
+
+      <div className="mx-2 hidden h-5 w-px bg-neutral-200 sm:block" />
+
+      <div className="hidden items-center gap-2 sm:flex">
+        <ToolButton onClick={resetBoard} label={t.toolbar.newBoard}>
+          <FilePlus size={16} />
+        </ToolButton>
+        {isGuest ? (
           <Link
-            href="/works"
-            title={t.toolbar.myWorks}
-            className="flex items-center rounded-md px-2 py-1 text-neutral-700 transition hover:bg-neutral-100"
+            href="/login"
+            className="flex items-center gap-1 rounded-md border border-matcha-200 bg-matcha-50 px-2 py-1 text-xs font-medium text-matcha-800 transition hover:border-matcha-400 hover:bg-matcha-100"
+            title={t.toolbar.loginSave}
           >
-            <FolderHeart size={16} />
+            <Save size={14} />
+            {t.toolbar.loginSaveBtn}
           </Link>
-        </>
-      )}
+        ) : (
+          <>
+            <ToolButton onClick={handleSave} label={t.toolbar.save}>
+              <Save size={16} />
+            </ToolButton>
+            <ToolButton onClick={openBoardsList} label={t.toolbar.openBoard}>
+              <FolderOpen size={16} />
+            </ToolButton>
+            <Link
+              href="/works"
+              title={t.toolbar.myWorks}
+              className="flex items-center rounded-md px-2 py-1 text-neutral-700 transition hover:bg-neutral-100"
+            >
+              <FolderHeart size={16} />
+            </Link>
+          </>
+        )}
+      </div>
 
-      <div className="mx-2 h-5 w-px bg-neutral-200" />
+      <div className="mx-2 hidden h-5 w-px bg-neutral-200 sm:block" />
 
-      <ToolButton
-        onClick={handleOpenSaveSnippet}
-        disabled={!hasSelection}
-        label={t.toolbar.saveToLib}
-      >
-        <BookmarkPlus size={16} />
-      </ToolButton>
-      <ToolButton onClick={() => setLibraryOpen(true)} label={t.toolbar.library}>
-        <BookMarked size={16} />
-      </ToolButton>
+      <div className="hidden items-center gap-2 sm:flex">
+        <ToolButton
+          onClick={handleOpenSaveSnippet}
+          disabled={!hasSelection}
+          label={t.toolbar.saveToLib}
+        >
+          <BookmarkPlus size={16} />
+        </ToolButton>
+        <ToolButton onClick={() => setLibraryOpen(true)} label={t.toolbar.library}>
+          <BookMarked size={16} />
+        </ToolButton>
+      </div>
 
-      <div className="mx-2 h-5 w-px bg-neutral-200" />
+      <div className="mx-2 hidden h-5 w-px bg-neutral-200 sm:block" />
 
-      <label className="flex items-center gap-1 rounded px-2 py-1 text-xs text-neutral-600">
+      <label className="hidden items-center gap-1 rounded px-2 py-1 text-xs text-neutral-600 sm:flex">
         {t.toolbar.page}
         <select
           value={activePage.canvas.pageSize}
@@ -467,7 +476,7 @@ export default function Toolbar({ stageRef }: Props) {
         </select>
       </label>
 
-      <label className="flex items-center gap-1 rounded px-2 py-1 text-xs text-neutral-600">
+      <label className="hidden items-center gap-1 rounded px-2 py-1 text-xs text-neutral-600 sm:flex">
         {t.toolbar.bg}
         <select
           value={activePage.canvas.background}
@@ -479,7 +488,7 @@ export default function Toolbar({ stageRef }: Props) {
         </select>
       </label>
 
-      <label className="flex items-center gap-1 rounded px-2 py-1 text-xs text-neutral-600">
+      <label className="hidden items-center gap-1 rounded px-2 py-1 text-xs text-neutral-600 sm:flex">
         {t.toolbar.font}
         <select
           value={board.fontFamily ?? 'math'}
@@ -495,10 +504,12 @@ export default function Toolbar({ stageRef }: Props) {
       </label>
 
       <div className="ml-auto flex items-center gap-2">
-        <ToolButton onClick={handleCopy} label={t.toolbar.copyPng}>
-          <ClipboardCopy size={16} />
-        </ToolButton>
-        <div ref={exportMenuRef} className="relative">
+        <div className="hidden sm:flex">
+          <ToolButton onClick={handleCopy} label={t.toolbar.copyPng}>
+            <ClipboardCopy size={16} />
+          </ToolButton>
+        </div>
+        <div ref={exportMenuRef} className="relative hidden sm:block">
           <button
             type="button"
             onClick={() => setExportMenuOpen((v) => !v)}
@@ -579,7 +590,7 @@ export default function Toolbar({ stageRef }: Props) {
             </div>
           )}
         </div>
-        <div ref={pdfMenuRef} className="relative">
+        <div ref={pdfMenuRef} className="relative hidden sm:block">
           <button
             type="button"
             onClick={() => setPdfMenuOpen((v) => !v)}
@@ -651,12 +662,14 @@ export default function Toolbar({ stageRef }: Props) {
         <ToolButton onClick={() => setPublishOpen(true)} label={t.publish.button}>
           <Share2 size={16} />
         </ToolButton>
-        <ToolButton onClick={handleExportJson} label={t.toolbar.exportJson}>
-          <span className="text-xs">JSON</span>
-        </ToolButton>
-        <ToolButton onClick={handleImportJsonClick} label={t.toolbar.importJson}>
-          <Upload size={16} />
-        </ToolButton>
+        <div className="hidden items-center gap-2 sm:flex">
+          <ToolButton onClick={handleExportJson} label={t.toolbar.exportJson}>
+            <span className="text-xs">JSON</span>
+          </ToolButton>
+          <ToolButton onClick={handleImportJsonClick} label={t.toolbar.importJson}>
+            <Upload size={16} />
+          </ToolButton>
+        </div>
         <input
           ref={fileInputRef}
           type="file"
@@ -664,6 +677,14 @@ export default function Toolbar({ stageRef }: Props) {
           className="hidden"
           onChange={handleImportJsonChange}
         />
+        <button
+          type="button"
+          onClick={() => setMobileMenuOpen(true)}
+          title="Menüü"
+          className="flex items-center rounded-md px-2 py-1 text-neutral-700 transition hover:bg-neutral-100 sm:hidden"
+        >
+          <MoreHorizontal size={18} />
+        </button>
       </div>
 
       {flash && (
@@ -679,6 +700,203 @@ export default function Toolbar({ stageRef }: Props) {
         onSave={handleSaveSnippet}
       />
       <PublishDialog open={publishOpen} board={board} onClose={() => setPublishOpen(false)} />
+
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 z-50 flex flex-col bg-black/40 sm:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        >
+          <div className="mt-auto max-h-[85vh] overflow-y-auto rounded-t-2xl bg-white p-4 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-base font-semibold text-neutral-800">{board.name}</h3>
+              <button
+                type="button"
+                onClick={() => setMobileMenuOpen(false)}
+                className="rounded-md p-1 text-neutral-500 hover:bg-neutral-100"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <MobileSection title={t.toolbar.selectionArea}>
+              <MobileAction
+                icon={<Copy size={18} />}
+                label={t.toolbar.duplicate}
+                disabled={!hasSelection}
+                onClick={() => {
+                  duplicateSelected();
+                  setMobileMenuOpen(false);
+                }}
+              />
+              <MobileAction
+                icon={<Trash2 size={18} />}
+                label={t.toolbar.deleteSel}
+                disabled={!hasSelection}
+                onClick={() => {
+                  deleteSelected();
+                  setMobileMenuOpen(false);
+                }}
+              />
+              <MobileAction
+                icon={<BookmarkPlus size={18} />}
+                label={t.toolbar.saveToLib}
+                disabled={!hasSelection}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleOpenSaveSnippet();
+                }}
+              />
+            </MobileSection>
+
+            <MobileSection title={t.toolbar.save}>
+              <MobileAction
+                icon={<FilePlus size={18} />}
+                label={t.toolbar.newBoard}
+                onClick={() => {
+                  resetBoard();
+                  setMobileMenuOpen(false);
+                }}
+              />
+              {isGuest ? (
+                <Link
+                  href="/login"
+                  className="flex items-center gap-3 rounded-lg border border-matcha-200 bg-matcha-50 px-3 py-3 text-sm font-medium text-matcha-800"
+                >
+                  <Save size={18} />
+                  {t.toolbar.loginSaveBtn}
+                </Link>
+              ) : (
+                <>
+                  <MobileAction
+                    icon={<Save size={18} />}
+                    label={t.toolbar.save}
+                    onClick={() => {
+                      handleSave();
+                      setMobileMenuOpen(false);
+                    }}
+                  />
+                  <MobileAction
+                    icon={<FolderOpen size={18} />}
+                    label={t.toolbar.openBoard}
+                    onClick={() => {
+                      setMobileMenuOpen(false);
+                      openBoardsList();
+                    }}
+                  />
+                  <Link
+                    href="/works"
+                    className="flex items-center gap-3 rounded-lg px-3 py-3 text-sm text-neutral-700 hover:bg-neutral-50"
+                  >
+                    <FolderHeart size={18} />
+                    {t.toolbar.myWorks}
+                  </Link>
+                </>
+              )}
+              <MobileAction
+                icon={<BookMarked size={18} />}
+                label={t.toolbar.library}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setLibraryOpen(true);
+                }}
+              />
+            </MobileSection>
+
+            <MobileSection title="Export">
+              <MobileAction
+                icon={<ClipboardCopy size={18} />}
+                label={t.toolbar.copyPng}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleCopy();
+                }}
+              />
+              <MobileAction
+                icon={<Download size={18} />}
+                label={`PNG — ${t.toolbar.whiteBg}`}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleExport('white');
+                }}
+              />
+              <MobileAction
+                icon={<Download size={18} />}
+                label={`PDF — ${t.toolbar.whiteBgPdf}`}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleExportPdfCurrent('white');
+                }}
+              />
+              <MobileAction
+                icon={<Download size={18} />}
+                label={t.toolbar.exportJson}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleExportJson();
+                }}
+              />
+              <MobileAction
+                icon={<Upload size={18} />}
+                label={t.toolbar.importJson}
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleImportJsonClick();
+                }}
+              />
+            </MobileSection>
+
+            <MobileSection title={t.toolbar.page}>
+              <label className="flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-neutral-700">
+                <span>{t.toolbar.page}</span>
+                <select
+                  value={activePage.canvas.pageSize}
+                  onChange={(e) => setPageSize(e.target.value as PageSize)}
+                  className="rounded border border-neutral-200 bg-white px-2 py-1 text-sm"
+                >
+                  {PAGE_SIZE_OPTIONS.map((p) => (
+                    <option key={p.id} value={p.id}>{p.label}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-neutral-700">
+                <span>{t.toolbar.bg}</span>
+                <select
+                  value={activePage.canvas.orientation}
+                  onChange={(e) => setOrientation(e.target.value as Orientation)}
+                  className="rounded border border-neutral-200 bg-white px-2 py-1 text-sm"
+                >
+                  {ORIENTATION_OPTIONS.map((o) => (
+                    <option key={o.id} value={o.id}>{o.label}</option>
+                  ))}
+                </select>
+              </label>
+              <label className="flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-neutral-700">
+                <span>{t.toolbar.bg}</span>
+                <select
+                  value={activePage.canvas.background}
+                  onChange={(e) => setBackground(e.target.value as 'transparent' | 'white')}
+                  className="rounded border border-neutral-200 bg-white px-2 py-1 text-sm"
+                >
+                  <option value="transparent">{t.toolbar.bgTransparent}</option>
+                  <option value="white">{t.toolbar.bgWhite}</option>
+                </select>
+              </label>
+              <label className="flex items-center justify-between gap-3 rounded-lg px-3 py-2 text-sm text-neutral-700">
+                <span>{t.toolbar.font}</span>
+                <select
+                  value={board.fontFamily ?? 'math'}
+                  onChange={(e) => setFontFamily(e.target.value)}
+                  className="rounded border border-neutral-200 bg-white px-2 py-1 text-sm"
+                >
+                  {FONT_OPTIONS.map((f) => (
+                    <option key={f.id} value={f.id}>{f.label}</option>
+                  ))}
+                </select>
+              </label>
+            </MobileSection>
+          </div>
+        </div>
+      )}
 
       {showBoards && (
         <div
@@ -764,6 +982,41 @@ function ToolButton({
       className="flex items-center rounded-md px-2 py-1 text-neutral-700 transition hover:bg-neutral-100 disabled:cursor-not-allowed disabled:opacity-40"
     >
       {children}
+    </button>
+  );
+}
+
+function MobileSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="mb-4">
+      <div className="mb-1 px-3 text-[10px] font-semibold uppercase tracking-wide text-neutral-500">
+        {title}
+      </div>
+      <div className="flex flex-col gap-1">{children}</div>
+    </div>
+  );
+}
+
+function MobileAction({
+  icon,
+  label,
+  onClick,
+  disabled,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="flex items-center gap-3 rounded-lg px-3 py-3 text-left text-sm text-neutral-700 transition hover:bg-neutral-50 disabled:cursor-not-allowed disabled:opacity-40"
+    >
+      <span className="text-neutral-500">{icon}</span>
+      <span>{label}</span>
     </button>
   );
 }
