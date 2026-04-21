@@ -17,6 +17,7 @@ import {
   BookMarked,
   BookmarkPlus,
   FolderHeart,
+  Share2,
 } from 'lucide-react';
 import { useBoardStore } from '@/store/useBoardStore';
 import {
@@ -42,6 +43,7 @@ import {
 import { saveSnippet } from '@/lib/snippetStorage';
 import LibraryPanel from '@/components/Library/LibraryPanel';
 import SaveSnippetDialog from '@/components/Library/SaveSnippetDialog';
+import PublishDialog from '@/components/Toolbar/PublishDialog';
 import { useAuth } from '@/lib/auth';
 import { useLang } from '@/i18n/useLang';
 import Link from 'next/link';
@@ -94,6 +96,7 @@ export default function Toolbar({ stageRef }: Props) {
 
   const [libraryOpen, setLibraryOpen] = useState(false);
   const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [publishOpen, setPublishOpen] = useState(false);
   const { user, ready } = useAuth();
   const isGuest = ready && !user;
 
@@ -645,6 +648,9 @@ export default function Toolbar({ stageRef }: Props) {
             </div>
           )}
         </div>
+        <ToolButton onClick={() => setPublishOpen(true)} label={t.publish.button}>
+          <Share2 size={16} />
+        </ToolButton>
         <ToolButton onClick={handleExportJson} label={t.toolbar.exportJson}>
           <span className="text-xs">JSON</span>
         </ToolButton>
@@ -672,6 +678,7 @@ export default function Toolbar({ stageRef }: Props) {
         onCancel={() => setSaveDialogOpen(false)}
         onSave={handleSaveSnippet}
       />
+      <PublishDialog open={publishOpen} board={board} onClose={() => setPublishOpen(false)} />
 
       {showBoards && (
         <div

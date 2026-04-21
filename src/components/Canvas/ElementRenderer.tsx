@@ -8,12 +8,13 @@ import ShapeRenderer from './ShapeRenderer';
 
 interface Props {
   element: BoardElement;
+  fontFamilyId?: string;
 }
 
-export default function ElementRenderer({ element }: Props) {
+export default function ElementRenderer({ element, fontFamilyId }: Props) {
   const { type, content, fontSize, color, width, height } = element;
-  const fontFamilyId = useBoardStore((s) => s.board.fontFamily);
-  const fontFamily = fontStack(fontFamilyId);
+  const storeFamily = useBoardStore((s) => s.board.fontFamily);
+  const fontFamily = fontStack(fontFamilyId ?? storeFamily);
 
   switch (type) {
     case 'number':

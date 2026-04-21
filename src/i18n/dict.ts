@@ -165,6 +165,21 @@ export interface Dict {
     delete: string;
     selectedCount: (n: number) => string;
   };
+  publish: {
+    button: string;
+    title: string;
+    subtitle: string;
+    createLink: string;
+    cancel: string;
+    publishing: string;
+    copy: string;
+    copied: string;
+    open: string;
+    close: string;
+    hint: string;
+    error: string;
+    tryAgain: string;
+  };
   guide: {
     metaTitle: string;
     metaDesc: string;
@@ -526,6 +541,21 @@ const et: Dict = {
     duplicate: 'Dubleeri',
     delete: 'Kustuta',
     selectedCount: (n) => `${n} valitud`,
+  },
+  publish: {
+    button: 'Jaga',
+    title: 'Jaga tahvlit',
+    subtitle: 'Loo avalik link, mida saad saata õpilastele või kolleegidele. Nad näevad tahvlit, aga ei saa muuta.',
+    createLink: 'Loo link',
+    cancel: 'Tühista',
+    publishing: 'Avaldan...',
+    copy: 'Kopeeri',
+    copied: 'Kopeeritud',
+    open: 'Ava uues aknas',
+    close: 'Sulge',
+    hint: 'Igaüks, kellel on see link, näeb tahvlit.',
+    error: 'Viga',
+    tryAgain: 'Proovi uuesti',
   },
   guide: {
     metaTitle: 'Juhend — Formo',
@@ -899,6 +929,21 @@ const en: Dict = {
     duplicate: 'Duplicate',
     delete: 'Delete',
     selectedCount: (n) => `${n} selected`,
+  },
+  publish: {
+    button: 'Share',
+    title: 'Share board',
+    subtitle: 'Create a public link to send to students or colleagues. They can view but not edit.',
+    createLink: 'Create link',
+    cancel: 'Cancel',
+    publishing: 'Publishing...',
+    copy: 'Copy',
+    copied: 'Copied',
+    open: 'Open in new tab',
+    close: 'Close',
+    hint: 'Anyone with this link can view the board.',
+    error: 'Error',
+    tryAgain: 'Try again',
   },
   guide: {
     metaTitle: 'Guide — Formo',
@@ -1287,6 +1332,21 @@ const ru: Dict = {
     duplicate: 'Дублировать',
     delete: 'Удалить',
     selectedCount: (n) => `${n} выделено`,
+  },
+  publish: {
+    button: 'Поделиться',
+    title: 'Поделиться доской',
+    subtitle: 'Создай публичную ссылку — отправь её ученикам или коллегам. Они смогут смотреть, но не редактировать.',
+    createLink: 'Создать ссылку',
+    cancel: 'Отмена',
+    publishing: 'Публикую...',
+    copy: 'Копировать',
+    copied: 'Скопировано',
+    open: 'Открыть в новой вкладке',
+    close: 'Закрыть',
+    hint: 'Любой, у кого есть эта ссылка, сможет открыть доску.',
+    error: 'Ошибка',
+    tryAgain: 'Попробовать снова',
   },
   guide: {
     metaTitle: 'Гайд — Formo',
