@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { emit, on } from './events';
 
 const KEY = 'formo:user';
 
@@ -28,13 +29,13 @@ export function loginAs(email: string, name?: string): AuthUser {
     loggedInAt: new Date().toISOString(),
   };
   window.localStorage.setItem(KEY, JSON.stringify(user));
-  window.dispatchEvent(new Event('formo:auth'));
+  emit('formo:auth');
   return user;
 }
 
 export function logout(): void {
   window.localStorage.removeItem(KEY);
-  window.dispatchEvent(new Event('formo:auth'));
+  emit('formo:auth');
 }
 
 export function useAuth(): { user: AuthUser | null; ready: boolean } {
@@ -47,10 +48,10 @@ export function useAuth(): { user: AuthUser | null; ready: boolean } {
     function sync() {
       setUser(read());
     }
-    window.addEventListener('formo:auth', sync);
+    const off = on('formo:auth', sync);
     window.addEventListener('storage', sync);
     return () => {
-      window.removeEventListener('formo:auth', sync);
+      off();
       window.removeEventListener('storage', sync);
     };
   }, []);

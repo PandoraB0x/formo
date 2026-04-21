@@ -3,7 +3,7 @@
 import { useLayoutEffect, useState } from 'react';
 import { Plus, Minus, RotateCw, RotateCcw, Trash2, Copy } from 'lucide-react';
 import type Konva from 'konva';
-import { useBoardStore } from '@/store/useBoardStore';
+import { useBoardStore, selectPrimaryId } from '@/store/useBoardStore';
 import { COLOR_SWATCHES, SIZE_STEPS, currentSizeIndex, snapRotation } from '@/lib/constants';
 import type { BoardElement } from '@/types/element';
 
@@ -15,8 +15,10 @@ interface Props {
 
 export default function SelectionPopup({ stage, hidden, viewKey }: Props) {
   const element = useBoardStore((s) => {
+    const id = selectPrimaryId(s);
+    if (!id) return null;
     const page = s.board.pages.find((p) => p.id === s.board.activePageId) ?? s.board.pages[0];
-    return page.elements.find((e) => e.id === s.selectedId) || null;
+    return page.elements.find((e) => e.id === id) || null;
   });
   const resizeStep = useBoardStore((s) => s.resizeStep);
   const rotateStep = useBoardStore((s) => s.rotateStep);

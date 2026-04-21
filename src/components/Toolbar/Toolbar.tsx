@@ -205,7 +205,7 @@ export default function Toolbar({ stageRef }: Props) {
   function getSelectionBBox(): { x: number; y: number; width: number; height: number } | null {
     const state = useBoardStore.getState();
     const page = state.board.pages.find((p) => p.id === state.board.activePageId) ?? state.board.pages[0];
-    const ids = state.selectedIds.length ? state.selectedIds : state.selectedId ? [state.selectedId] : [];
+    const ids = state.selectedIds;
     const chosen = page.elements.filter((e) => ids.includes(e.id));
     if (chosen.length === 0) return null;
     const minX = Math.min(...chosen.map((e) => e.x - e.width / 2));
@@ -269,7 +269,7 @@ export default function Toolbar({ stageRef }: Props) {
     if (!stage) return undefined;
     const state = useBoardStore.getState();
     const page = state.board.pages.find((p) => p.id === state.board.activePageId) ?? state.board.pages[0];
-    const ids = state.selectedIds.length ? state.selectedIds : state.selectedId ? [state.selectedId] : [];
+    const ids = state.selectedIds;
     const chosen = page.elements.filter((e) => ids.includes(e.id));
     if (chosen.length === 0) return undefined;
     const minX = Math.min(...chosen.map((e) => e.x - e.width / 2));

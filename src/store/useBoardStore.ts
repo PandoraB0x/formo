@@ -7,123 +7,26 @@ import type {
   ElementType,
   ElementContent,
   Page,
-  PageCanvas,
 } from '@/types/element';
 import { makeElement, duplicateElement } from '@/lib/elementFactory';
 import type { Snippet, SnippetElement } from '@/types/snippet';
 import { SIZE_STEPS, ROTATION_STEP, currentSizeIndex, snapRotation } from '@/lib/constants';
 import { getPagePixels, type PageSize, type Orientation } from '@/lib/pageSize';
+import {
+  HISTORY_LIMIT,
+  uid,
+  makePage,
+  newBoard,
+  migrateBoard,
+  getActivePage,
+  withActiveElements,
+  withActiveCanvas,
+} from './boardHelpers';
 
-const HISTORY_LIMIT = 40;
-
-function uid(prefix: string): string {
-  return `${prefix}_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`;
-}
-
-function makePage(canvas?: Partial<PageCanvas>): Page {
-  const defaults = getPagePixels('A4', 'portrait');
-  return {
-    id: uid('page'),
-    canvas: {
-      width: canvas?.width ?? defaults.w,
-      height: canvas?.height ?? defaults.h,
-      background: canvas?.background ?? 'transparent',
-      pageSize: canvas?.pageSize ?? 'A4',
-      orientation: canvas?.orientation ?? 'portrait',
-    },
-    elements: [],
-  };
-}
-
-function newBoard(): Board {
-  const now = new Date().toISOString();
-  const page = makePage();
-  return {
-    id: `board_${Date.now().toString(36)}`,
-    name: 'Uus tahvel',
-    version: 2,
-    createdAt: now,
-    updatedAt: now,
-    fontFamily: 'math',
-    activePageId: page.id,
-    pages: [page],
-  };
-}
-
-export function migrateBoard(raw: unknown): Board {
-  if (!raw || typeof raw !== 'object') return newBoard();
-  const r = raw as Record<string, unknown>;
-  if (Array.isArray(r.pages) && typeof r.activePageId === 'string') {
-    return raw as Board;
-  }
-  const legacy = raw as {
-    id?: string;
-    name?: string;
-    version?: number;
-    createdAt?: string;
-    updatedAt?: string;
-    canvas?: {
-      width?: number;
-      height?: number;
-      background?: 'transparent' | 'white';
-      fontFamily?: string;
-      pageSize?: PageSize;
-      orientation?: Orientation;
-    };
-    elements?: BoardElement[];
-  };
-  const lc = legacy.canvas ?? {};
-  const w = lc.width ?? getPagePixels('A4', 'portrait').w;
-  const h = lc.height ?? getPagePixels('A4', 'portrait').h;
-  const pageSize = lc.pageSize ?? 'A4';
-  const orientation = lc.orientation ?? (w >= h ? 'landscape' : 'portrait');
-  const page: Page = {
-    id: uid('page'),
-    canvas: {
-      width: w,
-      height: h,
-      background: lc.background ?? 'transparent',
-      pageSize,
-      orientation,
-    },
-    elements: legacy.elements ?? [],
-  };
-  const now = new Date().toISOString();
-  return {
-    id: legacy.id ?? `board_${Date.now().toString(36)}`,
-    name: legacy.name ?? 'Uus tahvel',
-    version: 2,
-    createdAt: legacy.createdAt ?? now,
-    updatedAt: legacy.updatedAt ?? now,
-    fontFamily: lc.fontFamily ?? 'math',
-    activePageId: page.id,
-    pages: [page],
-  };
-}
-
-function getActivePage(board: Board): Page {
-  return board.pages.find((p) => p.id === board.activePageId) ?? board.pages[0];
-}
-
-function withActivePage(board: Board, patch: Partial<Page>): Board {
-  const pages = board.pages.map((p) =>
-    p.id === board.activePageId ? { ...p, ...patch } : p,
-  );
-  return { ...board, pages, updatedAt: new Date().toISOString() };
-}
-
-function withActiveElements(board: Board, elements: BoardElement[]): Board {
-  return withActivePage(board, { elements });
-}
-
-function withActiveCanvas(board: Board, patch: Partial<PageCanvas>): Board {
-  const active = getActivePage(board);
-  return withActivePage(board, { canvas: { ...active.canvas, ...patch } });
-}
+export { migrateBoard, getActivePage };
 
 interface BoardState {
   board: Board;
-  selectedId: string | null;
   selectedIds: string[];
   past: Board[];
   future: Board[];
@@ -179,7 +82,6 @@ function activeElements(state: BoardState): BoardElement[] {
 
 export const useBoardStore = create<BoardState>((set, get) => ({
   board: newBoard(),
-  selectedId: null,
   selectedIds: [],
   past: [],
   future: [],
@@ -196,7 +98,6 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     set({
       ...pushHistory(state),
       board: withActiveElements(state.board, [...els, el]),
-      selectedId: el.id,
       selectedIds: [el.id],
     });
   },
@@ -213,7 +114,6 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     set({
       ...pushHistory(state),
       board: withActiveElements(state.board, els),
-      selectedId: state.selectedId === id ? null : state.selectedId,
       selectedIds: state.selectedIds.filter((x) => x !== id),
     });
   },
@@ -226,7 +126,6 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     set({
       ...pushHistory(state),
       board: withActiveElements(state.board, els),
-      selectedId: null,
       selectedIds: [],
     });
   },
@@ -247,21 +146,19 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     set({
       ...pushHistory(state),
       board: withActiveElements(state.board, [...all, ...copies]),
-      selectedId: newIds[newIds.length - 1],
       selectedIds: newIds,
     });
   },
 
-  selectElement: (id) => set({ selectedId: id, selectedIds: id ? [id] : [] }),
+  selectElement: (id) => set({ selectedIds: id ? [id] : [] }),
 
-  setSelection: (ids) =>
-    set({ selectedIds: ids, selectedId: ids.length ? ids[ids.length - 1] : null }),
+  setSelection: (ids) => set({ selectedIds: ids }),
 
   toggleInSelection: (id) => {
     const state = get();
     const has = state.selectedIds.includes(id);
     const next = has ? state.selectedIds.filter((x) => x !== id) : [...state.selectedIds, id];
-    set({ selectedIds: next, selectedId: next.length ? next[next.length - 1] : null });
+    set({ selectedIds: next });
   },
 
   resizeStep: (id, delta) => {
@@ -346,10 +243,10 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   },
 
   loadBoard: (board) =>
-    set({ board: migrateBoard(board), selectedId: null, selectedIds: [], past: [], future: [] }),
+    set({ board: migrateBoard(board), selectedIds: [], past: [], future: [] }),
 
   resetBoard: () =>
-    set({ board: newBoard(), selectedId: null, selectedIds: [], past: [], future: [] }),
+    set({ board: newBoard(), selectedIds: [], past: [], future: [] }),
 
   renameBoard: (name) => {
     const state = get();
@@ -419,7 +316,6 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         activePageId: page.id,
         updatedAt: new Date().toISOString(),
       },
-      selectedId: null,
       selectedIds: [],
     });
   },
@@ -437,7 +333,6 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     set({
       ...pushHistory(state),
       board: { ...state.board, pages, activePageId, updatedAt: new Date().toISOString() },
-      selectedId: null,
       selectedIds: [],
     });
   },
@@ -448,7 +343,6 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     if (!state.board.pages.some((p) => p.id === id)) return;
     set({
       board: { ...state.board, activePageId: id },
-      selectedId: null,
       selectedIds: [],
     });
   },
@@ -492,7 +386,6 @@ export const useBoardStore = create<BoardState>((set, get) => ({
         activePageId: copy.id,
         updatedAt: new Date().toISOString(),
       },
-      selectedId: null,
       selectedIds: [],
     });
   },
@@ -500,7 +393,7 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   buildSnippetFromSelection: (name, category) => {
     const state = get();
     const page = getActivePage(state.board);
-    const ids = state.selectedIds.length ? state.selectedIds : state.selectedId ? [state.selectedId] : [];
+    const ids = state.selectedIds;
     if (ids.length === 0) return null;
     const chosen = page.elements.filter((e) => ids.includes(e.id));
     if (chosen.length === 0) return null;
@@ -551,7 +444,6 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       ...pushHistory(state),
       board: withActiveElements(state.board, [...els, ...newElements]),
       selectedIds: newIds,
-      selectedId: newIds[newIds.length - 1] ?? null,
     });
   },
 
@@ -563,7 +455,6 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       board: previous,
       past: state.past.slice(0, -1),
       future: [state.board, ...state.future].slice(0, HISTORY_LIMIT),
-      selectedId: null,
       selectedIds: [],
     });
   },
@@ -576,10 +467,11 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       board: next,
       past: [...state.past, state.board].slice(-HISTORY_LIMIT),
       future: state.future.slice(1),
-      selectedId: null,
       selectedIds: [],
     });
   },
 }));
 
-export { getActivePage };
+export function selectPrimaryId(state: BoardState): string | null {
+  return state.selectedIds[state.selectedIds.length - 1] ?? null;
+}

@@ -3,9 +3,9 @@
 import { useEffect, useState, useCallback } from 'react';
 import { DEFAULT_LANG, type Lang } from './types';
 import { DICTS } from './dict';
+import { emit, on } from '@/lib/events';
 
 const STORAGE_KEY = 'formo:lang:v1';
-const EVENT_NAME = 'formo:lang';
 
 function readStoredLang(): Lang {
   if (typeof window === 'undefined') return DEFAULT_LANG;
@@ -26,10 +26,10 @@ export function useLang() {
       if (e.key === STORAGE_KEY) sync();
     };
     window.addEventListener('storage', onStorage);
-    window.addEventListener(EVENT_NAME, sync);
+    const off = on('formo:lang', sync);
     return () => {
       window.removeEventListener('storage', onStorage);
-      window.removeEventListener(EVENT_NAME, sync);
+      off();
     };
   }, []);
 
@@ -37,7 +37,7 @@ export function useLang() {
     setLangState(next);
     try {
       window.localStorage.setItem(STORAGE_KEY, next);
-      window.dispatchEvent(new Event(EVENT_NAME));
+      emit('formo:lang');
     } catch {}
   }, []);
 

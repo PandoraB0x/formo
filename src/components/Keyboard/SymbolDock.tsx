@@ -9,6 +9,7 @@ import { useBoardStore } from '@/store/useBoardStore';
 import { addRecentKey, getRecentKeys, clearRecentKeys } from '@/lib/recentKeys';
 import { getKeyboardPrefs, saveKeyboardPrefs } from '@/lib/keyboardPrefs';
 import { useAuth } from '@/lib/auth';
+import { emit, on } from '@/lib/events';
 import SymbolButton from './SymbolButton';
 
 export default function SymbolDock() {
@@ -22,17 +23,11 @@ export default function SymbolDock() {
   useEffect(() => {
     setPinnedIds(getKeyboardPrefs().pinned);
     setRecent(getRecentKeys());
-    function onPrefs() {
-      setPinnedIds(getKeyboardPrefs().pinned);
-    }
-    function onRecent() {
-      setRecent(getRecentKeys());
-    }
-    window.addEventListener('formo:prefs', onPrefs);
-    window.addEventListener('formo:recent', onRecent);
+    const offPrefs = on('formo:prefs', () => setPinnedIds(getKeyboardPrefs().pinned));
+    const offRecent = on('formo:recent', () => setRecent(getRecentKeys()));
     return () => {
-      window.removeEventListener('formo:prefs', onPrefs);
-      window.removeEventListener('formo:recent', onRecent);
+      offPrefs();
+      offRecent();
     };
   }, []);
 
@@ -53,7 +48,7 @@ export default function SymbolDock() {
   const handlePress = (k: KeyboardKey) => {
     addElement(k.type, k.content);
     addRecentKey(k);
-    window.dispatchEvent(new Event('formo:recent'));
+    emit('formo:recent');
   };
 
   const togglePin = (k: KeyboardKey) => {
@@ -64,7 +59,7 @@ export default function SymbolDock() {
       : [...prefs.pinned, id];
     saveKeyboardPrefs({ pinned });
     setPinnedIds(pinned);
-    window.dispatchEvent(new Event('formo:prefs'));
+    emit('formo:prefs');
   };
 
   const unpin = (k: KeyboardKey) => {
@@ -73,7 +68,7 @@ export default function SymbolDock() {
     const pinned = prefs.pinned.filter((x) => x !== id);
     saveKeyboardPrefs({ pinned });
     setPinnedIds(pinned);
-    window.dispatchEvent(new Event('formo:prefs'));
+    emit('formo:prefs');
   };
 
   const onDrop = (e: React.DragEvent) => {
@@ -87,7 +82,7 @@ export default function SymbolDock() {
     const pinned = [...prefs.pinned, id];
     saveKeyboardPrefs({ pinned });
     setPinnedIds(pinned);
-    window.dispatchEvent(new Event('formo:prefs'));
+    emit('formo:prefs');
   };
 
   return (

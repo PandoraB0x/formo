@@ -7,6 +7,7 @@ import { KEYBOARD_GROUPS, flattenKeys, keyId } from './keyboardConfig';
 import { useBoardStore } from '@/store/useBoardStore';
 import { addRecentKey } from '@/lib/recentKeys';
 import { getKeyboardPrefs, saveKeyboardPrefs } from '@/lib/keyboardPrefs';
+import { emit, on } from '@/lib/events';
 import SymbolButton from './SymbolButton';
 
 export default function SymbolBar() {
@@ -18,11 +19,7 @@ export default function SymbolBar() {
 
   useEffect(() => {
     setPinned(getKeyboardPrefs().pinned);
-    function onPrefs() {
-      setPinned(getKeyboardPrefs().pinned);
-    }
-    window.addEventListener('formo:prefs', onPrefs);
-    return () => window.removeEventListener('formo:prefs', onPrefs);
+    return on('formo:prefs', () => setPinned(getKeyboardPrefs().pinned));
   }, []);
 
   useEffect(() => {
@@ -44,7 +41,7 @@ export default function SymbolBar() {
   const handlePress = (k: KeyboardKey) => {
     addElement(k.type, k.content);
     addRecentKey(k);
-    window.dispatchEvent(new Event('formo:recent'));
+    emit('formo:recent');
     setOpenKey(null);
     setQuery('');
   };
@@ -57,7 +54,7 @@ export default function SymbolBar() {
       : [...prefs.pinned, id];
     saveKeyboardPrefs({ pinned });
     setPinned(pinned);
-    window.dispatchEvent(new Event('formo:prefs'));
+    emit('formo:prefs');
   };
 
   const activeGroup = useMemo(
