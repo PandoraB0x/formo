@@ -7,6 +7,7 @@ import SymbolBar from '@/components/Keyboard/SymbolBar';
 import SymbolDock from '@/components/Keyboard/SymbolDock';
 import Toolbar from '@/components/Toolbar/Toolbar';
 import PagesPanel from '@/components/Pages/PagesPanel';
+import MobilePagesFab from '@/components/Pages/MobilePagesFab';
 import { useBoardStore } from '@/store/useBoardStore';
 
 export default function CanvasClient() {
@@ -93,11 +94,16 @@ export default function CanvasClient() {
       <Toolbar stageRef={stageRef} />
       <SymbolBar />
       <main className="flex flex-1 overflow-hidden">
-        <SymbolDock />
-        <div className="flex-1">
-          <Canvas stageRef={stageRef} />
+        <div className="hidden sm:block">
+          <SymbolDock />
         </div>
-        <PagesPanel />
+        <div className="flex-1 relative">
+          <Canvas stageRef={stageRef} />
+          <MobilePagesFab />
+        </div>
+        <div className="hidden sm:block">
+          <PagesPanel />
+        </div>
       </main>
     </>
   );
