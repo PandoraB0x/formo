@@ -39,11 +39,43 @@ export default function InlineInput({ screenPosition, worldPosition, onClose }: 
   const [text, setText] = useState('');
   const inputRef = useRef<HTMLInputElement | null>(null);
   const addElement = useBoardStore((s) => s.addElement);
+  const [isMobile, setIsMobile] = useState(false);
+  const [vv, setVv] = useState<{ top: number; left: number; width: number } | null>(null);
 
   useEffect(() => {
     const t = setTimeout(() => inputRef.current?.focus(), 10);
     return () => clearTimeout(t);
   }, []);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 640);
+    check();
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  useEffect(() => {
+    if (!isMobile) {
+      setVv(null);
+      return;
+    }
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+    const update = () => {
+      setVv({
+        top: viewport.offsetTop,
+        left: viewport.offsetLeft,
+        width: viewport.width,
+      });
+    };
+    update();
+    viewport.addEventListener('resize', update);
+    viewport.addEventListener('scroll', update);
+    return () => {
+      viewport.removeEventListener('resize', update);
+      viewport.removeEventListener('scroll', update);
+    };
+  }, [isMobile]);
 
   const submit = () => {
     const trimmed = text.trim();
@@ -74,16 +106,28 @@ export default function InlineInput({ screenPosition, worldPosition, onClose }: 
     onClose();
   };
 
-  const width = Math.max(160, text.length * 16 + 40);
+  const desktopWidth = Math.max(160, text.length * 16 + 40);
+  const mobileWidth = vv ? Math.min(vv.width - 32, 520) : 320;
+  const width = isMobile ? mobileWidth : desktopWidth;
 
-  return (
-    <div
-      className="absolute z-30"
-      style={{
+  const wrapperStyle: React.CSSProperties = isMobile
+    ? {
+        position: 'fixed',
+        left: vv ? vv.left + vv.width / 2 : '50%',
+        top: vv ? vv.top + 16 : 16,
+        transform: 'translateX(-50%)',
+        zIndex: 60,
+      }
+    : {
         left: screenPosition.x,
         top: screenPosition.y,
         transform: 'translate(-50%, -50%)',
-      }}
+      };
+
+  return (
+    <div
+      className={isMobile ? '' : 'absolute z-30'}
+      style={wrapperStyle}
       onMouseDown={(e) => e.stopPropagation()}
     >
       <div className="relative">
