@@ -9,27 +9,6 @@ import { addRecentKey } from '@/lib/recentKeys';
 import { getKeyboardPrefs, saveKeyboardPrefs } from '@/lib/keyboardPrefs';
 import SymbolButton from './SymbolButton';
 
-const CATEGORY_META: Record<string, { short: string; tone: string }> = {
-  'Numbrid': { short: '123', tone: 'text-neutral-700' },
-  'Tehted': { short: '±', tone: 'text-matcha-700' },
-  'Võrdlus': { short: '=', tone: 'text-matcha-700' },
-  'Sulud': { short: '( )', tone: 'text-neutral-700' },
-  'Muutujad': { short: 'x', tone: 'text-neutral-700' },
-  'Kreeka — väiketähed': { short: 'α', tone: 'text-matcha-700' },
-  'Kreeka — suurtähed': { short: 'Ω', tone: 'text-matcha-700' },
-  'Trigonomeetria': { short: 'sin', tone: 'text-matcha-700' },
-  'Logaritmid ja piir': { short: 'ln', tone: 'text-matcha-700' },
-  'Integraalid ja summad': { short: '∑', tone: 'text-matcha-700' },
-  'Hulgateooria': { short: '∈', tone: 'text-matcha-700' },
-  'Loogika': { short: '∀', tone: 'text-matcha-700' },
-  'Nooled': { short: '→', tone: 'text-matcha-700' },
-  'Geomeetria': { short: '∠', tone: 'text-matcha-700' },
-  'Struktuurid': { short: '√', tone: 'text-matcha-700' },
-  'Kujundid 2D': { short: '△', tone: 'text-matcha-700' },
-  'Kujundid 2D punktiir': { short: '◇', tone: 'text-matcha-700' },
-  'Kujundid 3D': { short: '◨', tone: 'text-matcha-700' },
-};
-
 export default function SymbolBar() {
   const addElement = useBoardStore((s) => s.addElement);
   const [openKey, setOpenKey] = useState<string | null>(null);
@@ -38,9 +17,9 @@ export default function SymbolBar() {
   const barRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    setPinned(getKeyboardPrefs().favorites);
+    setPinned(getKeyboardPrefs().pinned);
     function onPrefs() {
-      setPinned(getKeyboardPrefs().favorites);
+      setPinned(getKeyboardPrefs().pinned);
     }
     window.addEventListener('formo:prefs', onPrefs);
     return () => window.removeEventListener('formo:prefs', onPrefs);
@@ -73,11 +52,11 @@ export default function SymbolBar() {
   const togglePin = (k: KeyboardKey) => {
     const id = keyId(k);
     const prefs = getKeyboardPrefs();
-    const favorites = prefs.favorites.includes(id)
-      ? prefs.favorites.filter((x) => x !== id)
-      : [...prefs.favorites, id];
-    saveKeyboardPrefs({ ...prefs, favorites });
-    setPinned(favorites);
+    const pinned = prefs.pinned.includes(id)
+      ? prefs.pinned.filter((x) => x !== id)
+      : [...prefs.pinned, id];
+    saveKeyboardPrefs({ pinned });
+    setPinned(pinned);
     window.dispatchEvent(new Event('formo:prefs'));
   };
 
@@ -121,7 +100,6 @@ export default function SymbolBar() {
         </button>
         <div className="h-5 w-px shrink-0 bg-neutral-200" />
         {KEYBOARD_GROUPS.map((g) => {
-          const meta = CATEGORY_META[g.title] ?? { short: g.title.slice(0, 3), tone: 'text-neutral-700' };
           const open = openKey === g.title;
           return (
             <button
@@ -135,7 +113,7 @@ export default function SymbolBar() {
               }`}
               title={g.title}
             >
-              <span className={`text-base leading-none ${meta.tone}`}>{meta.short}</span>
+              <span className="text-base leading-none text-matcha-700">{g.short}</span>
               <span className="hidden md:inline">{g.title}</span>
             </button>
           );

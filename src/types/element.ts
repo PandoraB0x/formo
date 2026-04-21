@@ -67,5 +67,6 @@ export interface KeyboardKey {
 
 export interface KeyboardGroup {
   title: string;
+  short: string;
   keys: KeyboardKey[];
 }

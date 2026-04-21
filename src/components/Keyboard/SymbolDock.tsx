@@ -20,10 +20,10 @@ export default function SymbolDock() {
   const [dragOver, setDragOver] = useState(false);
 
   useEffect(() => {
-    setPinnedIds(getKeyboardPrefs().favorites);
+    setPinnedIds(getKeyboardPrefs().pinned);
     setRecent(getRecentKeys());
     function onPrefs() {
-      setPinnedIds(getKeyboardPrefs().favorites);
+      setPinnedIds(getKeyboardPrefs().pinned);
     }
     function onRecent() {
       setRecent(getRecentKeys());
@@ -59,20 +59,20 @@ export default function SymbolDock() {
   const togglePin = (k: KeyboardKey) => {
     const id = keyId(k);
     const prefs = getKeyboardPrefs();
-    const favorites = prefs.favorites.includes(id)
-      ? prefs.favorites.filter((x) => x !== id)
-      : [...prefs.favorites, id];
-    saveKeyboardPrefs({ ...prefs, favorites });
-    setPinnedIds(favorites);
+    const pinned = prefs.pinned.includes(id)
+      ? prefs.pinned.filter((x) => x !== id)
+      : [...prefs.pinned, id];
+    saveKeyboardPrefs({ pinned });
+    setPinnedIds(pinned);
     window.dispatchEvent(new Event('formo:prefs'));
   };
 
   const unpin = (k: KeyboardKey) => {
     const id = keyId(k);
     const prefs = getKeyboardPrefs();
-    const favorites = prefs.favorites.filter((x) => x !== id);
-    saveKeyboardPrefs({ ...prefs, favorites });
-    setPinnedIds(favorites);
+    const pinned = prefs.pinned.filter((x) => x !== id);
+    saveKeyboardPrefs({ pinned });
+    setPinnedIds(pinned);
     window.dispatchEvent(new Event('formo:prefs'));
   };
 
@@ -84,9 +84,9 @@ export default function SymbolDock() {
     if (!allKeysById.has(id)) return;
     if (pinnedIds.includes(id)) return;
     const prefs = getKeyboardPrefs();
-    const favorites = [...prefs.favorites, id];
-    saveKeyboardPrefs({ ...prefs, favorites });
-    setPinnedIds(favorites);
+    const pinned = [...prefs.pinned, id];
+    saveKeyboardPrefs({ pinned });
+    setPinnedIds(pinned);
     window.dispatchEvent(new Event('formo:prefs'));
   };
 

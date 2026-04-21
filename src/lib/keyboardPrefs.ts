@@ -1,26 +1,30 @@
 'use client';
 
-const KEY = 'formo:keyboard:v1';
+const KEY = 'formo:keyboard:v2';
+const LEGACY_KEY = 'formo:keyboard:v1';
 
 export interface KeyboardPrefs {
-  order: string[];
-  collapsed: string[];
-  favorites: string[];
+  pinned: string[];
 }
 
-const DEFAULT: KeyboardPrefs = { order: [], collapsed: [], favorites: [] };
+const DEFAULT: KeyboardPrefs = { pinned: [] };
 
 export function getKeyboardPrefs(): KeyboardPrefs {
   if (typeof window === 'undefined') return DEFAULT;
   try {
     const raw = window.localStorage.getItem(KEY);
-    if (!raw) return DEFAULT;
-    const parsed = JSON.parse(raw) as Partial<KeyboardPrefs>;
-    return {
-      order: Array.isArray(parsed.order) ? parsed.order : [],
-      collapsed: Array.isArray(parsed.collapsed) ? parsed.collapsed : [],
-      favorites: Array.isArray(parsed.favorites) ? parsed.favorites : [],
-    };
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<KeyboardPrefs>;
+      return { pinned: Array.isArray(parsed.pinned) ? parsed.pinned : [] };
+    }
+    const legacy = window.localStorage.getItem(LEGACY_KEY);
+    if (legacy) {
+      const parsed = JSON.parse(legacy) as { favorites?: string[] };
+      const pinned = Array.isArray(parsed.favorites) ? parsed.favorites : [];
+      saveKeyboardPrefs({ pinned });
+      return { pinned };
+    }
+    return DEFAULT;
   } catch {
     return DEFAULT;
   }

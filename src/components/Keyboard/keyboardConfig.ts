@@ -13,6 +13,7 @@ function shapeKeys(category: '2d-solid' | '2d-dashed' | '3d'): KeyboardKey[] {
 export const KEYBOARD_GROUPS: KeyboardGroup[] = [
   {
     title: 'Numbrid',
+    short: '123',
     keys: [
       { label: '0', type: 'number', content: '0' },
       { label: '1', type: 'number', content: '1' },
@@ -30,6 +31,7 @@ export const KEYBOARD_GROUPS: KeyboardGroup[] = [
   },
   {
     title: 'Tehted',
+    short: '±',
     keys: [
       { label: '+', type: 'operator', content: '+', hint: 'pluss' },
       { label: '−', type: 'operator', content: '−', hint: 'miinus' },
@@ -47,6 +49,7 @@ export const KEYBOARD_GROUPS: KeyboardGroup[] = [
   },
   {
     title: 'Võrdlus',
+    short: '=',
     keys: [
       { label: '=', type: 'operator', content: '=' },
       { label: '≠', type: 'operator', content: '≠', hint: 'ei ole võrdne' },
@@ -64,6 +67,7 @@ export const KEYBOARD_GROUPS: KeyboardGroup[] = [
   },
   {
     title: 'Sulud',
+    short: '( )',
     keys: [
       { label: '(', type: 'paren', content: '(' },
       { label: ')', type: 'paren', content: ')' },
@@ -79,6 +83,7 @@ export const KEYBOARD_GROUPS: KeyboardGroup[] = [
   },
   {
     title: 'Muutujad',
+    short: 'x',
     keys: [
       { label: 'x', type: 'variable', content: 'x' },
       { label: 'y', type: 'variable', content: 'y' },
@@ -96,6 +101,7 @@ export const KEYBOARD_GROUPS: KeyboardGroup[] = [
   },
   {
     title: 'Kreeka — väiketähed',
+    short: 'α',
     keys: [
       { label: 'α', type: 'variable', content: 'α', hint: 'alfa' },
       { label: 'β', type: 'variable', content: 'β', hint: 'beeta' },
@@ -119,6 +125,7 @@ export const KEYBOARD_GROUPS: KeyboardGroup[] = [
   },
   {
     title: 'Kreeka — suurtähed',
+    short: 'Ω',
     keys: [
       { label: 'Γ', type: 'variable', content: 'Γ', hint: 'Gamma' },
       { label: 'Δ', type: 'variable', content: 'Δ', hint: 'Delta' },
@@ -134,6 +141,7 @@ export const KEYBOARD_GROUPS: KeyboardGroup[] = [
   },
   {
     title: 'Trigonomeetria',
+    short: 'sin',
     keys: [
       { label: 'sin', type: 'function', content: 'sin', hint: 'siinus' },
       { label: 'cos', type: 'function', content: 'cos', hint: 'koosinus' },
@@ -151,6 +159,7 @@ export const KEYBOARD_GROUPS: KeyboardGroup[] = [
   },
   {
     title: 'Logaritmid ja piir',
+    short: 'ln',
     keys: [
       { label: 'log', type: 'function', content: 'log' },
       { label: 'ln', type: 'function', content: 'ln', hint: 'naturaallogaritm' },
@@ -168,6 +177,7 @@ export const KEYBOARD_GROUPS: KeyboardGroup[] = [
   },
   {
     title: 'Integraalid ja summad',
+    short: '∑',
     keys: [
       { label: '∑', type: 'operator', content: '∑', hint: 'summa' },
       { label: '∏', type: 'operator', content: '∏', hint: 'korrutis' },
@@ -183,6 +193,7 @@ export const KEYBOARD_GROUPS: KeyboardGroup[] = [
   },
   {
     title: 'Hulgateooria',
+    short: '∈',
     keys: [
       { label: '∈', type: 'operator', content: '∈', hint: 'kuulub' },
       { label: '∉', type: 'operator', content: '∉', hint: 'ei kuulu' },
@@ -203,6 +214,7 @@ export const KEYBOARD_GROUPS: KeyboardGroup[] = [
   },
   {
     title: 'Loogika',
+    short: '∀',
     keys: [
       { label: '¬', type: 'operator', content: '¬', hint: 'eitus' },
       { label: '∧', type: 'operator', content: '∧', hint: 'ja' },
@@ -220,6 +232,7 @@ export const KEYBOARD_GROUPS: KeyboardGroup[] = [
   },
   {
     title: 'Nooled',
+    short: '→',
     keys: [
       { label: '→', type: 'operator', content: '→' },
       { label: '←', type: 'operator', content: '←' },
@@ -235,6 +248,7 @@ export const KEYBOARD_GROUPS: KeyboardGroup[] = [
   },
   {
     title: 'Geomeetria',
+    short: '∠',
     keys: [
       { label: '∠', type: 'operator', content: '∠', hint: 'nurk' },
       { label: '∡', type: 'operator', content: '∡', hint: 'suunatud nurk' },
@@ -250,6 +264,7 @@ export const KEYBOARD_GROUPS: KeyboardGroup[] = [
   },
   {
     title: 'Struktuurid',
+    short: '√',
     keys: [
       { label: 'a⁄b', type: 'fraction', content: { numerator: 'a', denominator: 'b' }, hint: 'Murd' },
       { label: 'x²', type: 'power', content: { base: 'x', exponent: '2' }, hint: 'Aste (ruut)' },
@@ -262,14 +277,17 @@ export const KEYBOARD_GROUPS: KeyboardGroup[] = [
   },
   {
     title: 'Kujundid 2D',
+    short: '△',
     keys: shapeKeys('2d-solid'),
   },
   {
     title: 'Kujundid 2D punktiir',
+    short: '◇',
     keys: shapeKeys('2d-dashed'),
   },
   {
     title: 'Kujundid 3D',
+    short: '◨',
     keys: shapeKeys('3d'),
   },
 ];
