@@ -10,13 +10,15 @@ export type ElementType =
   | 'sqrt'
   | 'text'
   | 'line'
-  | 'shape';
+  | 'shape'
+  | 'path';
 
 export type ElementContent =
   | string
   | { numerator: string; denominator: string }
   | { base: string; exponent: string }
-  | { base: string; index: string };
+  | { base: string; index: string }
+  | { points: number[]; strokeWidth: number };
 
 export interface BoardElement {
   id: string;
@@ -30,6 +32,7 @@ export interface BoardElement {
   color: string;
   rotation: number;
   zIndex: number;
+  locked?: boolean;
 }
 
 export interface PageCanvas {

@@ -8,7 +8,7 @@ import type {
   ElementContent,
   Page,
 } from '@/types/element';
-import { makeElement, duplicateElement } from '@/lib/elementFactory';
+import { makeElement, duplicateElement, computeSqrtSize } from '@/lib/elementFactory';
 import type { Snippet, SnippetElement } from '@/types/snippet';
 import { SIZE_STEPS, ROTATION_STEP, currentSizeIndex, snapRotation } from '@/lib/constants';
 import { getPagePixels, type PageSize, type Orientation } from '@/lib/pageSize';
@@ -25,11 +25,20 @@ import {
 
 export { migrateBoard, getActivePage };
 
+export type Tool = 'select' | 'pen';
+
 interface BoardState {
   board: Board;
   selectedIds: string[];
   past: Board[];
   future: Board[];
+  tool: Tool;
+  penColor: string;
+  penWidth: number;
+  setTool: (t: Tool) => void;
+  setPenColor: (c: string) => void;
+  setPenWidth: (w: number) => void;
+  addPathElement: (points: number[], color: string, strokeWidth: number) => void;
 
   addElement: (type: ElementType, content: ElementContent, viewport?: { x: number; y: number }) => void;
   deleteElement: (id: string) => void;
@@ -46,6 +55,7 @@ interface BoardState {
   beginHistory: () => void;
   moveElementSilent: (id: string, x: number, y: number) => void;
   moveManySilent: (deltas: { id: string; x: number; y: number }[]) => void;
+  setSqrtContentSilent: (id: string, content: string) => void;
 
   loadBoard: (board: Board) => void;
   resetBoard: () => void;
@@ -83,6 +93,57 @@ export const useBoardStore = create<BoardState>((set, get) => ({
   selectedIds: [],
   past: [],
   future: [],
+  tool: 'select',
+  penColor: '#111111',
+  penWidth: 3,
+
+  setTool: (t) => set({ tool: t, selectedIds: [] }),
+  setPenColor: (c) => set({ penColor: c }),
+  setPenWidth: (w) => set({ penWidth: Math.max(1, Math.min(20, w)) }),
+
+  addPathElement: (points, color, strokeWidth) => {
+    if (points.length < 4) return;
+    const state = get();
+    const els = activeElements(state);
+    let minX = points[0], minY = points[1], maxX = points[0], maxY = points[1];
+    for (let i = 0; i < points.length; i += 2) {
+      const x = points[i];
+      const y = points[i + 1];
+      if (x < minX) minX = x;
+      if (x > maxX) maxX = x;
+      if (y < minY) minY = y;
+      if (y > maxY) maxY = y;
+    }
+    const pad = strokeWidth + 2;
+    minX -= pad; minY -= pad; maxX += pad; maxY += pad;
+    const w = Math.max(1, maxX - minX);
+    const h = Math.max(1, maxY - minY);
+    const cx = minX + w / 2;
+    const cy = minY + h / 2;
+    const localPoints: number[] = new Array(points.length);
+    for (let i = 0; i < points.length; i += 2) {
+      localPoints[i] = points[i] - minX;
+      localPoints[i + 1] = points[i + 1] - minY;
+    }
+    const maxZ = els.reduce((m, e) => Math.max(m, e.zIndex), 0);
+    const el: BoardElement = {
+      id: `el_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 6)}`,
+      type: 'path',
+      content: { points: localPoints, strokeWidth },
+      x: cx,
+      y: cy,
+      width: w,
+      height: h,
+      fontSize: 64,
+      color,
+      rotation: 0,
+      zIndex: maxZ + 1,
+    };
+    set({
+      ...pushHistory(state),
+      board: withActiveElements(state.board, [...els, el]),
+    });
+  },
 
   addElement: (type, content, viewport) => {
     const state = get();
@@ -102,7 +163,10 @@ export const useBoardStore = create<BoardState>((set, get) => ({
 
   deleteElement: (id) => {
     const state = get();
-    const els = activeElements(state).filter((e) => e.id !== id);
+    const all = activeElements(state);
+    const target = all.find((e) => e.id === id);
+    if (!target || target.locked) return;
+    const els = all.filter((e) => e.id !== id);
     set({
       ...pushHistory(state),
       board: withActiveElements(state.board, els),
@@ -114,7 +178,9 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     const state = get();
     if (state.selectedIds.length === 0) return;
     const toDelete = new Set(state.selectedIds);
-    const els = activeElements(state).filter((e) => !toDelete.has(e.id));
+    const all = activeElements(state);
+    const els = all.filter((e) => !toDelete.has(e.id) || e.locked);
+    if (els.length === all.length) return;
     set({
       ...pushHistory(state),
       board: withActiveElements(state.board, els),
@@ -167,6 +233,17 @@ export const useBoardStore = create<BoardState>((set, get) => ({
       if (e.id !== id) return e;
       if (e.type === 'line') {
         return { ...e, fontSize: newFontSize, width: e.width * ratio };
+      }
+      if (e.type === 'path') {
+        const c = e.content as { points: number[]; strokeWidth: number };
+        const newPoints = c.points.map((v) => v * ratio);
+        return {
+          ...e,
+          fontSize: newFontSize,
+          width: e.width * ratio,
+          height: e.height * ratio,
+          content: { points: newPoints, strokeWidth: c.strokeWidth * ratio },
+        };
       }
       return { ...e, fontSize: newFontSize, width: e.width * ratio, height: e.height * ratio };
     });
@@ -221,6 +298,19 @@ export const useBoardStore = create<BoardState>((set, get) => ({
     const els = activeElements(state).map((e) => {
       const d = map.get(e.id);
       return d ? { ...e, x: d.x, y: d.y } : e;
+    });
+    const pages = state.board.pages.map((p) =>
+      p.id === state.board.activePageId ? { ...p, elements: els } : p,
+    );
+    set({ board: { ...state.board, pages } });
+  },
+
+  setSqrtContentSilent: (id, content) => {
+    const state = get();
+    const els = activeElements(state).map((e) => {
+      if (e.id !== id || e.type !== 'sqrt') return e;
+      const sz = computeSqrtSize(content, e.fontSize);
+      return { ...e, content, width: sz.width, height: sz.height };
     });
     const pages = state.board.pages.map((p) =>
       p.id === state.board.activePageId ? { ...p, elements: els } : p,

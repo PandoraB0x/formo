@@ -1,32 +1,45 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import type { ElementType } from '@/types/element';
 import { useBoardStore } from '@/store/useBoardStore';
-import { splitForScript, normalizePlusMinus, parseFraction } from '@/lib/mathParse';
-
-const NUMERIC_PATTERN = /^[\s\d.,+\-−·×÷()=<>≤≥≠≈±%°πe ]*$/;
-
-function detectType(text: string): ElementType {
-  return NUMERIC_PATTERN.test(text) ? 'number' : 'text';
-}
+import {
+  splitForScript,
+  toSuperscript,
+  toSubscript,
+  normalizePlusMinus,
+} from '@/lib/mathParse';
 
 interface Props {
+  elementId: string;
+  initialContent: string;
   screenPosition: { x: number; y: number };
-  worldPosition: { x: number; y: number };
   onClose: () => void;
 }
 
-export default function InlineInput({ screenPosition, worldPosition, onClose }: Props) {
-  const [text, setText] = useState('');
-  const inputRef = useRef<HTMLInputElement | null>(null);
-  const addElement = useBoardStore((s) => s.addElement);
+export default function SqrtEditor({ elementId, initialContent, screenPosition, onClose }: Props) {
+  const stripped = initialContent.replace(/□/g, '');
+  const [text, setText] = useState(stripped);
   const [isMobile, setIsMobile] = useState(false);
   const [vv, setVv] = useState<{ top: number; left: number; width: number } | null>(null);
+  const inputRef = useRef<HTMLInputElement | null>(null);
+  const originalRef = useRef(initialContent);
+  const historyPushedRef = useRef(false);
+
+  const setSqrtContentSilent = useBoardStore((s) => s.setSqrtContentSilent);
+  const beginHistory = useBoardStore((s) => s.beginHistory);
 
   useEffect(() => {
     const t = setTimeout(() => inputRef.current?.focus(), 10);
     return () => clearTimeout(t);
+  }, []);
+
+  useEffect(() => {
+    if (stripped !== originalRef.current) {
+      beginHistory();
+      historyPushedRef.current = true;
+      setSqrtContentSilent(elementId, stripped);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -59,33 +72,33 @@ export default function InlineInput({ screenPosition, worldPosition, onClose }: 
     };
   }, [isMobile]);
 
-  const submit = () => {
-    const trimmed = text.trim();
-    if (trimmed) {
-      const frac = parseFraction(trimmed);
-      if (frac) {
-        addElement('fraction', frac, worldPosition);
-      } else {
-        addElement(detectType(trimmed), trimmed, worldPosition);
-      }
+  const applySilent = (next: string) => {
+    if (!historyPushedRef.current) {
+      beginHistory();
+      historyPushedRef.current = true;
     }
-    onClose();
+    setSqrtContentSilent(elementId, next);
   };
 
-  const submitScript = (direction: 'up' | 'down') => {
-    const parts = splitForScript(text);
-    if (!parts) return false;
-    if (direction === 'up') {
-      addElement('power', { base: parts.base, exponent: parts.tail }, worldPosition);
-    } else {
-      addElement('subscript', { base: parts.base, index: parts.tail }, worldPosition);
-    }
+  const submit = () => {
     onClose();
-    return true;
   };
 
   const cancel = () => {
+    if (historyPushedRef.current) {
+      setSqrtContentSilent(elementId, originalRef.current);
+    }
     onClose();
+  };
+
+  const applyScript = (direction: 'up' | 'down'): boolean => {
+    const parts = splitForScript(text);
+    if (!parts) return false;
+    const converted = direction === 'up' ? toSuperscript(parts.tail) : toSubscript(parts.tail);
+    const next = parts.base + converted;
+    setText(next);
+    applySilent(next);
+    return true;
   };
 
   const desktopWidth = Math.max(160, text.length * 16 + 40);
@@ -124,11 +137,13 @@ export default function InlineInput({ screenPosition, worldPosition, onClose }: 
               const caret = e.target.selectionStart ?? normalized.length;
               const delta = raw.length - normalized.length;
               setText(normalized);
+              applySilent(normalized);
               queueMicrotask(() => {
                 inputRef.current?.setSelectionRange(caret - delta, caret - delta);
               });
             } else {
               setText(raw);
+              applySilent(raw);
             }
           }}
           onBlur={submit}
@@ -140,13 +155,13 @@ export default function InlineInput({ screenPosition, worldPosition, onClose }: 
               e.preventDefault();
               cancel();
             } else if (e.key === 'ArrowUp') {
-              if (submitScript('up')) e.preventDefault();
+              if (applyScript('up')) e.preventDefault();
             } else if (e.key === 'ArrowDown') {
-              if (submitScript('down')) e.preventDefault();
+              if (applyScript('down')) e.preventDefault();
             }
             e.stopPropagation();
           }}
-          placeholder="123.45 / 2x+3 / ↑ aste / ↓ indeks"
+          placeholder="avaldis juure alla · ↑ aste · ↓ indeks"
           className="rounded-md border-2 border-matcha-400 bg-white px-2.5 py-1 text-2xl font-medium text-neutral-900 shadow-lg outline-none focus:border-matcha-500 focus:ring-2 focus:ring-matcha-200"
           style={{
             width,
@@ -155,7 +170,7 @@ export default function InlineInput({ screenPosition, worldPosition, onClose }: 
         />
         <div className="pointer-events-none absolute left-0 right-0 top-full mt-1 flex justify-center">
           <span className="rounded bg-neutral-900 px-1.5 py-0.5 text-[9px] text-white shadow">
-            Enter — lisa • ↑ aste • ↓ indeks • Esc — tühista
+            Enter — salvesta • Esc — tühista
           </span>
         </div>
       </div>

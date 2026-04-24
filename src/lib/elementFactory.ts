@@ -1,5 +1,6 @@
 import type { BoardElement, ElementType, ElementContent } from '@/types/element';
 import { SHAPE_MAP } from '@/lib/shapes';
+import { parseFraction } from '@/lib/mathParse';
 
 let counter = 0;
 function uid(): string {
@@ -22,6 +23,7 @@ const DEFAULTS: Record<ElementType, { width: number; height: number; fontSize: n
   sqrt: { width: 120, height: 100, fontSize: 56 },
   line: { width: 200, height: 6, fontSize: 64 },
   shape: { width: 140, height: 120, fontSize: 64 },
+  path: { width: 100, height: 100, fontSize: 64 },
 };
 
 const TEXT_WIDTH_FACTOR = 0.58;
@@ -51,6 +53,53 @@ function computeFractionSize(
   return { width, height };
 }
 
+export function computeSqrtSize(
+  content: ElementContent,
+  fontSize: number,
+): { width: number; height: number } {
+  const text = typeof content === 'string' ? content : '';
+  const minWidth = Math.round((DEFAULTS.sqrt.width / DEFAULTS.sqrt.fontSize) * fontSize);
+  const minHeight = Math.round((DEFAULTS.sqrt.height / DEFAULTS.sqrt.fontSize) * fontSize);
+
+  const frac = parseFraction(text);
+  if (frac) {
+    const partFs = Math.round(fontSize * 0.75);
+    const maxLen = Math.max(1, frac.numerator.length, frac.denominator.length);
+    const textWidth = Math.ceil(maxLen * partFs * TEXT_WIDTH_FACTOR);
+    const height = Math.max(minHeight, Math.round(partFs * 2.8) + 16);
+    const hookSpace = height * 0.22 + 20;
+    const width = Math.max(minWidth, hookSpace + textWidth + 20);
+    return { width, height };
+  }
+
+  const height = minHeight;
+  const hookSpace = height * 0.22 + 20;
+  const textWidth = Math.ceil(text.length * fontSize * TEXT_WIDTH_FACTOR);
+  const width = Math.max(minWidth, hookSpace + textWidth + 12);
+  return { width, height };
+}
+
+function computeScriptSize(
+  type: 'power' | 'subscript',
+  content: ElementContent,
+  fontSize: number,
+  baseWidth: number,
+  baseHeight: number,
+): { width: number; height: number } {
+  const c = (content && typeof content === 'object' ? content : {}) as {
+    base?: string;
+    exponent?: string;
+    index?: string;
+  };
+  const baseText = c.base ?? '';
+  const tailText = (type === 'power' ? c.exponent : c.index) ?? '';
+  const tailFs = Math.max(12, fontSize * 0.55);
+  const baseTextW = Math.ceil(baseText.length * fontSize * TEXT_WIDTH_FACTOR);
+  const tailTextW = Math.ceil(tailText.length * tailFs * TEXT_WIDTH_FACTOR);
+  const needed = baseTextW + tailTextW + 24;
+  return { width: Math.max(baseWidth, needed), height: baseHeight };
+}
+
 export function makeElement(
   type: ElementType,
   content: ElementContent,
@@ -62,6 +111,16 @@ export function makeElement(
   let height = d.height;
   if (type === 'fraction') {
     const sz = computeFractionSize(content, d.fontSize);
+    width = sz.width;
+    height = sz.height;
+  }
+  if (type === 'sqrt') {
+    const sz = computeSqrtSize(content, d.fontSize);
+    width = sz.width;
+    height = sz.height;
+  }
+  if (type === 'power' || type === 'subscript') {
+    const sz = computeScriptSize(type, content, d.fontSize, d.width, d.height);
     width = sz.width;
     height = sz.height;
   }

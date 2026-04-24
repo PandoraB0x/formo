@@ -1,13 +1,15 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { Stage, Layer, Group, Rect } from 'react-konva';
+import { Stage, Layer, Group, Rect, Line } from 'react-konva';
 import type Konva from 'konva';
 import type { KonvaEventObject } from 'konva/lib/Node';
 import { useBoardStore } from '@/store/useBoardStore';
 import ElementRenderer from './ElementRenderer';
 import SelectionPopup from './SelectionPopup';
 import InlineInput from './InlineInput';
+import SqrtEditor from './SqrtEditor';
+import PenToolbar from './PenToolbar';
 import { useLang } from '@/i18n/useLang';
 import type { BoardElement } from '@/types/element';
 
@@ -41,6 +43,13 @@ interface InlineAt {
   worldY: number;
 }
 
+interface EditingSqrt {
+  id: string;
+  content: string;
+  screenX: number;
+  screenY: number;
+}
+
 const MIN_SCALE = 0.1;
 const MAX_SCALE = 4;
 const ZOOM_STEP = 1.1;
@@ -52,8 +61,12 @@ export default function Canvas({ stageRef }: CanvasProps) {
   const [stageReady, setStageReady] = useState(false);
   const [draggingId, setDraggingId] = useState<string | null>(null);
   const [inlineAt, setInlineAt] = useState<InlineAt | null>(null);
+  const [editingSqrt, setEditingSqrt] = useState<EditingSqrt | null>(null);
   const [rubber, setRubber] = useState<RubberBand | null>(null);
   const dragGroupRef = useRef<DragGroup | null>(null);
+  const [livePath, setLivePath] = useState<number[] | null>(null);
+  const pathAccumRef = useRef<number[]>([]);
+  const lastPenPointRef = useRef<{ x: number; y: number } | null>(null);
 
   const [view, setView] = useState<View>({ x: 0, y: 0, scale: 1 });
   const [spaceDown, setSpaceDown] = useState(false);
@@ -75,6 +88,10 @@ export default function Canvas({ stageRef }: CanvasProps) {
   const selectedIds = useBoardStore((s) => s.selectedIds);
   const selectElement = useBoardStore((s) => s.selectElement);
   const setSelection = useBoardStore((s) => s.setSelection);
+  const tool = useBoardStore((s) => s.tool);
+  const penColor = useBoardStore((s) => s.penColor);
+  const penWidth = useBoardStore((s) => s.penWidth);
+  const addPathElement = useBoardStore((s) => s.addPathElement);
   const toggleInSelection = useBoardStore((s) => s.toggleInSelection);
   const beginHistory = useBoardStore((s) => s.beginHistory);
   const moveElementSilent = useBoardStore((s) => s.moveElementSilent);
@@ -292,6 +309,15 @@ export default function Canvas({ stageRef }: CanvasProps) {
       };
       return;
     }
+    if (tool === 'pen') {
+      if ('preventDefault' in native) native.preventDefault();
+      const pointer = stage.getRelativePointerPosition();
+      if (!pointer) return;
+      pathAccumRef.current = [pointer.x, pointer.y];
+      lastPenPointRef.current = { x: pointer.x, y: pointer.y };
+      setLivePath([pointer.x, pointer.y]);
+      return;
+    }
     if (e.target !== stage) return;
     const pointer = stage.getRelativePointerPosition();
     if (!pointer) return;
@@ -309,6 +335,18 @@ export default function Canvas({ stageRef }: CanvasProps) {
       setView((v) => ({ ...v, x: start.viewX + dx, y: start.viewY + dy }));
       return;
     }
+    if (tool === 'pen' && livePath) {
+      const stage = e.target.getStage();
+      const pointer = stage?.getRelativePointerPosition();
+      if (!pointer) return;
+      const last = lastPenPointRef.current;
+      const minDist = 2;
+      if (last && Math.hypot(pointer.x - last.x, pointer.y - last.y) < minDist) return;
+      pathAccumRef.current.push(pointer.x, pointer.y);
+      lastPenPointRef.current = { x: pointer.x, y: pointer.y };
+      setLivePath([...pathAccumRef.current]);
+      return;
+    }
     if (!rubber) return;
     const stage = e.target.getStage();
     const pointer = stage?.getRelativePointerPosition();
@@ -322,6 +360,16 @@ export default function Canvas({ stageRef }: CanvasProps) {
       panStartRef.current = null;
       return;
     }
+    if (tool === 'pen' && livePath) {
+      const pts = pathAccumRef.current;
+      if (pts.length >= 4) {
+        addPathElement(pts, penColor, penWidth);
+      }
+      pathAccumRef.current = [];
+      lastPenPointRef.current = null;
+      setLivePath(null);
+      return;
+    }
     if (!rubber) return;
     const x1 = Math.min(rubber.x0, rubber.x);
     const y1 = Math.min(rubber.y0, rubber.y);
@@ -330,6 +378,7 @@ export default function Canvas({ stageRef }: CanvasProps) {
     if (x2 - x1 > 3 || y2 - y1 > 3) {
       const ids = elements
         .filter((el) => {
+          if (el.locked) return false;
           const halfW = el.width / 2;
           const halfH = el.height / 2;
           return (
@@ -372,12 +421,29 @@ export default function Canvas({ stageRef }: CanvasProps) {
   };
 
   const handleElementClick = (el: BoardElement, e: KonvaEventObject<MouseEvent | TouchEvent>) => {
+    if (el.locked) return;
     const native = e.evt as MouseEvent;
     if (native && (native.ctrlKey || native.metaKey || native.shiftKey)) {
       toggleInSelection(el.id);
     } else if (!selectedIds.includes(el.id)) {
       selectElement(el.id);
     }
+  };
+
+  const handleElementDblClick = (el: BoardElement, e: KonvaEventObject<MouseEvent | TouchEvent>) => {
+    if (el.locked) return;
+    if (el.type !== 'sqrt') return;
+    e.cancelBubble = true;
+    const screenX = view.x + el.x * view.scale;
+    const screenY = view.y + el.y * view.scale;
+    setRubber(null);
+    setInlineAt(null);
+    setEditingSqrt({
+      id: el.id,
+      content: typeof el.content === 'string' ? el.content : '',
+      screenX,
+      screenY,
+    });
   };
 
   const handleDragStart = (el: BoardElement) => {
@@ -450,7 +516,13 @@ export default function Canvas({ stageRef }: CanvasProps) {
         }
       : null;
 
-  const cursor = isPanning ? 'grabbing' : spaceDown ? 'grab' : 'default';
+  const cursor = isPanning
+    ? 'grabbing'
+    : spaceDown
+    ? 'grab'
+    : tool === 'pen'
+    ? 'crosshair'
+    : 'default';
 
   return (
     <div
@@ -501,7 +573,7 @@ export default function Canvas({ stageRef }: CanvasProps) {
             <GridBackground width={pageWidth} height={pageHeight} />
           </Layer>
 
-          <Layer id="elements-layer">
+          <Layer id="elements-layer" listening={tool !== 'pen'}>
             {sorted.map((el) => {
               const isSelected = selectedIds.includes(el.id);
               return (
@@ -515,9 +587,11 @@ export default function Canvas({ stageRef }: CanvasProps) {
                   rotation={el.rotation}
                   offsetX={el.width / 2}
                   offsetY={el.height / 2}
-                  draggable={!spaceDown}
+                  draggable={!spaceDown && !el.locked}
                   onClick={(e) => handleElementClick(el, e)}
                   onTap={(e) => handleElementClick(el, e)}
+                  onDblClick={(e) => handleElementDblClick(el, e)}
+                  onDblTap={(e) => handleElementDblClick(el, e)}
                   onDragStart={() => handleDragStart(el)}
                   onDragMove={(e) => handleDragMove(el, e)}
                   onDragEnd={(e) => handleDragEnd(el, e)}
@@ -550,6 +624,16 @@ export default function Canvas({ stageRef }: CanvasProps) {
                 dash={[4 / view.scale, 3 / view.scale]}
               />
             )}
+            {livePath && livePath.length >= 4 && (
+              <Line
+                points={livePath}
+                stroke={penColor}
+                strokeWidth={penWidth}
+                lineCap="round"
+                lineJoin="round"
+                tension={0.35}
+              />
+            )}
           </Layer>
         </Stage>
       )}
@@ -561,15 +645,17 @@ export default function Canvas({ stageRef }: CanvasProps) {
         onFit={fitToPage}
       />
 
+      <PenToolbar />
+
       {stageReady && selectedIds.length <= 1 && (
         <SelectionPopup
           stage={stageRef.current}
-          hidden={Boolean(draggingId) || Boolean(inlineAt) || Boolean(rubber)}
+          hidden={Boolean(draggingId) || Boolean(inlineAt) || Boolean(editingSqrt) || Boolean(rubber)}
           viewKey={`${Math.round(view.x)}_${Math.round(view.y)}_${view.scale.toFixed(3)}`}
         />
       )}
 
-      {stageReady && selectedIds.length > 1 && !draggingId && !inlineAt && !rubber && (
+      {stageReady && selectedIds.length > 1 && !draggingId && !inlineAt && !editingSqrt && !rubber && (
         <MultiSelectionPopup count={selectedIds.length} />
       )}
 
@@ -578,6 +664,15 @@ export default function Canvas({ stageRef }: CanvasProps) {
           screenPosition={{ x: inlineAt.screenX, y: inlineAt.screenY }}
           worldPosition={{ x: inlineAt.worldX, y: inlineAt.worldY }}
           onClose={() => setInlineAt(null)}
+        />
+      )}
+
+      {editingSqrt && (
+        <SqrtEditor
+          elementId={editingSqrt.id}
+          initialContent={editingSqrt.content}
+          screenPosition={{ x: editingSqrt.screenX, y: editingSqrt.screenY }}
+          onClose={() => setEditingSqrt(null)}
         />
       )}
 

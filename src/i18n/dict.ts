@@ -193,6 +193,18 @@ export interface Dict {
     error: string;
     tryAgain: string;
   };
+  worksheet: {
+    badge: string;
+    undo: string;
+    redo: string;
+    reset: string;
+    resetConfirm: string;
+    resetTitle: string;
+    download: string;
+    namePrompt: string;
+    downloadError: string;
+    pagesLabel: string;
+  };
   guide: {
     metaTitle: string;
     metaDesc: string;
@@ -582,6 +594,18 @@ const et: Dict = {
     hint: 'Igaüks, kellel on see link, näeb tahvlit.',
     error: 'Viga',
     tryAgain: 'Proovi uuesti',
+  },
+  worksheet: {
+    badge: 'Tööleht · õpilane',
+    undo: 'Tagasi (Ctrl+Z)',
+    redo: 'Edasi (Ctrl+Y)',
+    reset: 'Lähtesta',
+    resetConfirm: 'Kindel?',
+    resetTitle: 'Lähtesta minu muudatused',
+    download: 'Lae PDF alla',
+    namePrompt: 'Sinu nimi (valikuline):',
+    downloadError: 'Viga PDF loomisel',
+    pagesLabel: 'Lehed:',
   },
   guide: {
     metaTitle: 'Juhend — Formo',
@@ -983,6 +1007,18 @@ const en: Dict = {
     hint: 'Anyone with this link can view the board.',
     error: 'Error',
     tryAgain: 'Try again',
+  },
+  worksheet: {
+    badge: 'Worksheet · student',
+    undo: 'Undo (Ctrl+Z)',
+    redo: 'Redo (Ctrl+Y)',
+    reset: 'Reset',
+    resetConfirm: 'Sure?',
+    resetTitle: 'Reset my changes',
+    download: 'Download PDF',
+    namePrompt: 'Your name (optional):',
+    downloadError: 'Error creating PDF',
+    pagesLabel: 'Pages:',
   },
   guide: {
     metaTitle: 'Guide — Formo',
@@ -1399,6 +1435,18 @@ const ru: Dict = {
     hint: 'Любой, у кого есть эта ссылка, сможет открыть доску.',
     error: 'Ошибка',
     tryAgain: 'Попробовать снова',
+  },
+  worksheet: {
+    badge: 'Рабочий лист · ученик',
+    undo: 'Отменить (Ctrl+Z)',
+    redo: 'Повторить (Ctrl+Y)',
+    reset: 'Сбросить',
+    resetConfirm: 'Точно?',
+    resetTitle: 'Сбросить мои изменения',
+    download: 'Скачать PDF',
+    namePrompt: 'Твоё имя (необязательно):',
+    downloadError: 'Ошибка при создании PDF',
+    pagesLabel: 'Страницы:',
   },
   guide: {
     metaTitle: 'Гайд — Formo',

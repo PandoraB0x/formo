@@ -14,7 +14,7 @@ interface Props {
 type State =
   | { kind: 'idle' }
   | { kind: 'publishing' }
-  | { kind: 'published'; url: string }
+  | { kind: 'published'; url: string; worksheetUrl: string }
   | { kind: 'error'; msg: string };
 
 export default function PublishDialog({ open, board, onClose }: Props) {
@@ -43,7 +43,8 @@ export default function PublishDialog({ open, board, onClose }: Props) {
       }
       const { slug } = (await res.json()) as { slug: string };
       const url = `${window.location.origin}/b/${slug}`;
-      setState({ kind: 'published', url });
+      const worksheetUrl = `${window.location.origin}/w/${slug}`;
+      setState({ kind: 'published', url, worksheetUrl });
     } catch (err) {
       setState({
         kind: 'error',
@@ -125,33 +126,65 @@ export default function PublishDialog({ open, board, onClose }: Props) {
 
         {state.kind === 'published' && (
           <>
-            <div className="mt-5 flex items-stretch gap-2">
-              <input
-                readOnly
-                value={state.url}
-                className="flex-1 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm font-mono text-neutral-700"
-                onFocus={(e) => e.currentTarget.select()}
-              />
-              <button
-                type="button"
-                onClick={() => copy(state.url)}
-                title={t.publish.copy}
-                className="flex items-center gap-1 rounded-md bg-matcha-600 px-3 text-sm font-semibold text-white transition hover:bg-matcha-700"
-              >
-                {copied ? <Check size={14} /> : <Copy size={14} />}
-                {copied ? t.publish.copied : t.publish.copy}
-              </button>
+            <div className="mt-5 space-y-3">
+              <div>
+                <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                  Vaatamiseks (ainult lugemine)
+                </div>
+                <div className="flex items-stretch gap-2">
+                  <input
+                    readOnly
+                    value={state.url}
+                    className="flex-1 rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm font-mono text-neutral-700"
+                    onFocus={(e) => e.currentTarget.select()}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => copy(state.url)}
+                    title={t.publish.copy}
+                    className="flex items-center gap-1 rounded-md bg-matcha-600 px-3 text-sm font-semibold text-white transition hover:bg-matcha-700"
+                  >
+                    {copied ? <Check size={14} /> : <Copy size={14} />}
+                  </button>
+                </div>
+              </div>
+
+              <div>
+                <div className="mb-1 text-xs font-semibold uppercase tracking-wide text-matcha-700">
+                  Töölehe režiim (õpilased lisavad oma lahendused)
+                </div>
+                <div className="flex items-stretch gap-2">
+                  <input
+                    readOnly
+                    value={state.worksheetUrl}
+                    className="flex-1 rounded-md border border-matcha-200 bg-matcha-50/50 px-3 py-2 text-sm font-mono text-neutral-700"
+                    onFocus={(e) => e.currentTarget.select()}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => copy(state.worksheetUrl)}
+                    title={t.publish.copy}
+                    className="flex items-center gap-1 rounded-md bg-matcha-600 px-3 text-sm font-semibold text-white transition hover:bg-matcha-700"
+                  >
+                    {copied ? <Check size={14} /> : <Copy size={14} />}
+                  </button>
+                </div>
+              </div>
             </div>
-            <p className="mt-3 text-xs text-neutral-500">{t.publish.hint}</p>
+
+            <p className="mt-3 text-xs text-neutral-500">
+              Töölehel ei saa õpilased sinu ülesandeid muuta, aga saavad oma lahenduse lisada ja PDF-ina alla laadida.
+            </p>
+
             <div className="mt-5 flex items-center justify-between">
               <a
-                href={state.url}
+                href={state.worksheetUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex items-center gap-1 text-sm text-matcha-700 hover:text-matcha-900"
               >
                 <ExternalLink size={14} />
-                {t.publish.open}
+                Ava tööleht
               </a>
               <button
                 type="button"
